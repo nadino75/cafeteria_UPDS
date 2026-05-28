@@ -290,7 +290,53 @@ Dashboard · Contabilidad · Reportes *(solo lectura)*
 
 ---
 
-## 10. Lo que NO está en scope de esta fase
+## 10. Matriz de acciones CRUD por rol en dashboards
+
+Las siguientes acciones (botones/formularios) aparecen en cada dashboard según los permisos del backend (`routes/api.php`):
+
+| Acción | Admin | Gerente | Cajero | Almacenista | Contador |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **VENTAS** | | | | | |
+| Ver ventas | ✅ | ✅ | ✅ solo su turno | ❌ | ❌ |
+| Crear nueva venta | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Cancelar venta | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **TURNOS** | | | | | |
+| Ver turnos | ✅ | ✅ | ✅ solo el propio | ❌ | ❌ |
+| Abrir turno | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Cerrar turno | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **INVENTARIO** | | | | | |
+| Ver stock / alertas / vencimientos | ✅ | ✅ | 👁 solo lectura | ✅ | ❌ |
+| Ajustar stock | ✅ | ✅ | ❌ | ✅ | ❌ |
+| **COMPRAS** | | | | | |
+| Ver compras | ✅ | ✅ | ❌ | ✅ | ❌ |
+| Crear orden de compra | ✅ | ✅ | ❌ | ✅ | ❌ |
+| Recibir / aprobar compra | ✅ | ✅ | ❌ | ✅ | ❌ |
+| **CLIENTES** | | | | | |
+| Ver clientes | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Crear / editar cliente | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Canjear puntos | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Eliminar cliente | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **USUARIOS** | | | | | |
+| Ver usuarios | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Crear / editar usuario | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Eliminar usuario | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **GASTOS** | | | | | |
+| Ver / crear / editar / eliminar gasto | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **REPORTES / CONTABILIDAD** | | | | | |
+| Ver reportes y balances | ✅ | ✅ | ❌ | ❌ | ✅ solo lectura |
+| Crear / editar asientos contables | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **CONFIGURACIÓN** | | | | | |
+| Gestionar roles y permisos | ✅ | ❌ | ❌ | ❌ | ❌ |
+
+**Notas técnicas:**
+- `clientes` no tiene `destroy` en el backend — nadie puede eliminar clientes (soft-delete via `activo=false`)
+- El Cajero solo ve ventas de **su turno activo**, no el historial global
+- El Contador es **estrictamente solo lectura** — ningún botón de creación/edición en su dashboard
+- El Administrador bypasea todos los middlewares (`es_superadmin=true`) — ve y puede hacer todo
+
+---
+
+## 12. Lo que NO está en scope de esta fase
 
 - Vistas CRUD de cada módulo (Productos, Ventas, Compras, etc.) — solo dashboards
 - Formulario de nueva venta completo — solo acceso desde CajeroDashboard
@@ -301,7 +347,7 @@ Dashboard · Contabilidad · Reportes *(solo lectura)*
 
 ---
 
-## 11. Dependencias del proyecto frontend
+## 13. Dependencias del proyecto frontend
 
 ```json
 {
