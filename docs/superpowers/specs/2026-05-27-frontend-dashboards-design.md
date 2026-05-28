@@ -233,9 +233,9 @@ Dashboard · Contabilidad · Reportes *(solo lectura)*
 - Botones de acción grandes: [Nueva Venta] [Cerrar Turno]
 
 **Widgets:**
-- Tabla: últimas 10 ventas del turno con botón anular (`GET /api/ventas`)
-- Rejilla: menús disponibles del día (`GET /api/menus`)
-- Buscador rápido de clientes para asociar venta (`GET /api/clientes`)
+- Tabla: últimas 10 ventas del turno — **solo lectura**, sin botón de cancelar (Cajero no tiene `ventas,editar`) (`GET /api/ventas?turno_id=X`)
+- Rejilla: menús disponibles del día — solo lectura (`GET /api/menus?activo=true`)
+- Buscador rápido de clientes para asociar venta (`GET /api/clientes?search=X`)
 
 **Endpoint principal:** `GET /api/turnos/activo`
 
@@ -290,49 +290,85 @@ Dashboard · Contabilidad · Reportes *(solo lectura)*
 
 ---
 
-## 10. Matriz de acciones CRUD por rol en dashboards
+## 10. Matriz exacta de acciones CRUD por rol (verificada contra controladores reales)
 
-Las siguientes acciones (botones/formularios) aparecen en cada dashboard según los permisos del backend (`routes/api.php`):
+Basado en análisis de los 13 controladores + `RolPermisosSeeder.php` + `routes/api.php`.
 
-| Acción | Admin | Gerente | Cajero | Almacenista | Contador |
-|---|:---:|:---:|:---:|:---:|:---:|
-| **VENTAS** | | | | | |
-| Ver ventas | ✅ | ✅ | ✅ solo su turno | ❌ | ❌ |
-| Crear nueva venta | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Cancelar venta | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **TURNOS** | | | | | |
-| Ver turnos | ✅ | ✅ | ✅ solo el propio | ❌ | ❌ |
-| Abrir turno | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Cerrar turno | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **INVENTARIO** | | | | | |
-| Ver stock / alertas / vencimientos | ✅ | ✅ | 👁 solo lectura | ✅ | ❌ |
-| Ajustar stock | ✅ | ✅ | ❌ | ✅ | ❌ |
-| **COMPRAS** | | | | | |
-| Ver compras | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Crear orden de compra | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Recibir / aprobar compra | ✅ | ✅ | ❌ | ✅ | ❌ |
-| **CLIENTES** | | | | | |
-| Ver clientes | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Crear / editar cliente | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Canjear puntos | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Eliminar cliente | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **USUARIOS** | | | | | |
-| Ver usuarios | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Crear / editar usuario | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Eliminar usuario | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **GASTOS** | | | | | |
-| Ver / crear / editar / eliminar gasto | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **REPORTES / CONTABILIDAD** | | | | | |
-| Ver reportes y balances | ✅ | ✅ | ❌ | ❌ | ✅ solo lectura |
-| Crear / editar asientos contables | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **CONFIGURACIÓN** | | | | | |
-| Gestionar roles y permisos | ✅ | ❌ | ❌ | ❌ | ❌ |
+### Notas técnicas del backend que afectan el frontend
 
-**Notas técnicas:**
-- `clientes` no tiene `destroy` en el backend — nadie puede eliminar clientes (soft-delete via `activo=false`)
-- El Cajero solo ve ventas de **su turno activo**, no el historial global
-- El Contador es **estrictamente solo lectura** — ningún botón de creación/edición en su dashboard
-- El Administrador bypasea todos los middlewares (`es_superadmin=true`) — ve y puede hacer todo
+- **Ventas, Turnos y Compras no tienen `update()` ni `destroy()`** — son registros inmutables por diseño
+- **GastoOperativo no tiene `update()`** — solo crear y eliminar
+- **`destroy()` es soft-delete en**: Producto (`activo=false`), Usuario (`activo=false`), Menú (`activo=false`), Proveedor (`activo=false`)
+- **`destroy()` es DELETE físico en**: GastoOperativo, Categoría (con validación de integridad referencial)
+- **Cajero NO puede cancelar ventas** — seeder le asigna solo `ventas:[crear,leer]`, sin `editar`; la ruta `cancelar` requiere `ventas,editar`
+- **Gerente es solo lectura en Usuarios** — seeder le asigna solo `usuarios,leer`; el backend no impide crear/editar (gap de seguridad en rutas), el frontend NO muestra esos botones
+- **Almacenista tiene CRUD completo en Proveedores** — la ruta usa `permisos:compras,leer` para todas las operaciones de proveedores
+- **Productos usan `inventario,leer` para todo el CRUD** — el Almacenista (que tiene `inventario,leer`) puede crear/editar/desactivar productos
+- **Registro de usuarios** — no hay ruta pública `/register`; el frontend usa `POST /api/usuarios` que requiere autenticación. La vista `RegisterView.vue` es para uso del Administrador
+
+### AdminDashboard — bypass total (`es_superadmin=true`)
+
+| Módulo | Ver | Crear | Editar | Cancelar / Desactivar / Eliminar |
+|---|:---:|:---:|:---:|:---:|
+| Ventas | ✅ global | ✅ | — | ✅ cancelar (`ventas,editar`) |
+| Turnos | ✅ todos | ✅ abrir | — | ✅ cerrar (`turnos,aprobar`) |
+| Inventario lotes | ✅ | ✅ entrada FIFO | ✅ ajuste/merma | — |
+| Productos | ✅ | ✅ | ✅ precio/stock\_min | ✅ desactivar (soft) |
+| Categorías | ✅ | ✅ | ✅ | ✅ eliminar físico |
+| Menús + ingredientes | ✅ | ✅ | ✅ reemplaza ingredientes | ✅ desactivar (soft) |
+| Compras | ✅ | ✅ orden de compra | — | ✅ recibir/aprobar |
+| Proveedores | ✅ | ✅ | ✅ | ✅ desactivar (soft) |
+| Clientes | ✅ | ✅ | ✅ + canjear puntos | ❌ no expuesto en backend |
+| Gastos operativos | ✅ | ✅ | ❌ no existe update | ✅ eliminar físico |
+| Usuarios | ✅ | ✅ + asigna rol | ✅ + resetea password | ✅ desactivar (soft) |
+| Reportes | ✅ todos | — | — | — |
+
+### GerenteDashboard — todos los módulos excepto gestión de usuarios
+
+| Módulo | Ver | Crear | Editar | Cancelar / Desactivar / Eliminar |
+|---|:---:|:---:|:---:|:---:|
+| Ventas | ✅ global | ✅ | — | ✅ cancelar |
+| Turnos | ✅ todos | ✅ abrir | — | ✅ cerrar |
+| Inventario lotes | ✅ | ✅ entrada FIFO | ✅ ajuste/merma | — |
+| Productos | ✅ | ✅ | ✅ | ✅ desactivar |
+| Categorías | ✅ | ✅ | ✅ | ✅ eliminar |
+| Menús | ✅ | ✅ | ✅ | ✅ desactivar |
+| Compras | ✅ | ✅ | — | ✅ recibir |
+| Proveedores | ✅ | ✅ | ✅ | ✅ desactivar |
+| Clientes | ✅ | ✅ | ✅ + canjear puntos | ❌ |
+| Gastos | ✅ | ✅ | ❌ no existe | ✅ eliminar |
+| **Usuarios** | ✅ solo ver | ❌ | ❌ | ❌ |
+| Reportes | ✅ todos | — | — | — |
+
+### CajeroDashboard — punto de venta operativo
+
+| Módulo | Ver | Crear | Editar | Cancelar / Cerrar |
+|---|:---:|:---:|:---:|:---:|
+| Ventas | ✅ solo su turno | ✅ | ❌ sin permiso | ❌ sin permiso (`ventas,editar` requerido) |
+| Turnos | ✅ solo su turno | ✅ abrir | — | ✅ cerrar |
+| Clientes | ✅ búsqueda | ✅ | ✅ + canjear puntos | ❌ |
+| Inventario | ✅ solo lectura | ❌ | ❌ | — |
+| Menús | ✅ solo lectura | ❌ | ❌ | — |
+
+### AlmacenistaDashboard — inventario y abastecimiento
+
+| Módulo | Ver | Crear | Editar / Ajustar | Desactivar / Aprobar |
+|---|:---:|:---:|:---:|:---:|
+| Inventario lotes | ✅ | ✅ entrada FIFO | ✅ ajuste/merma | — |
+| Productos | ✅ | ✅ | ✅ | ✅ desactivar |
+| Categorías | ✅ | ✅ | ✅ | ❌ sin `inventario,eliminar` |
+| Compras | ✅ | ✅ orden | — | ✅ recibir |
+| Proveedores | ✅ | ✅ | ✅ | ✅ desactivar |
+| Clientes | ✅ solo lista | ❌ | ❌ | — |
+
+### ContadorDashboard — exclusivamente lectura y exportación
+
+| Módulo | Ver | Crear | Editar | Eliminar |
+|---|:---:|:---:|:---:|:---:|
+| Reportes (todos) | ✅ | ❌ | ❌ | ❌ |
+| Contabilidad | ✅ | ❌ | ❌ | ❌ |
+
+> El Contador tiene `exportar` en contabilidad y reportes — se agrega botón [Exportar] en su dashboard cuando se implemente esa funcionalidad.
 
 ---
 
