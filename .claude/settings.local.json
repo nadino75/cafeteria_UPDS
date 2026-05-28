@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\cafeteria_UPDS\" | Where-Object { $_.Name -notin @\\('vendor','node_modules'\\) } | Select-Object Name, PSIsContainer | Sort-Object PSIsContainer -Descending)",
+      "PowerShell(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\cafeteria_UPDS\\\\app\" -Recurse | Where-Object { -not $_.PSIsContainer } | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\(\"c:\\\\xampp\\\\htdocs\\\\cafeteria_UPDS\\\\\",\"\"\\) })",
+      "PowerShell(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\cafeteria_UPDS\\\\database\" -Recurse | Where-Object { -not $_.PSIsContainer } | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\(\"c:\\\\xampp\\\\htdocs\\\\cafeteria_UPDS\\\\\",\"\"\\) })",
+      "PowerShell(Get-Process mysqld -ErrorAction SilentlyContinue)",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysqld.exe\" --version 2>&1)",
+      "PowerShell(& \"C:\\\\xampp\\\\xampp-control.exe\" 2>&1)",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysqladmin.exe\" -u root ping 2>&1)",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root -e \"CREATE DATABASE IF NOT EXISTS cafeteria_upds CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; SHOW DATABASES;\" 2>&1)",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root -e \"SHOW VARIABLES LIKE 'port'; SHOW VARIABLES LIKE 'socket';\" 2>&1)",
+      "PowerShell(netstat -an)"
+    ]
+  }
+}
