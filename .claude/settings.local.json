@@ -29,7 +29,8 @@
       "Bash(cp -r frontend/src/stores resources/js/)",
       "Bash(cp -r frontend/src/router resources/js/)",
       "Bash(cp -r frontend/src/layouts resources/js/)",
-      "Bash(cp -r frontend/src/components resources/js/)"
+      "Bash(cp -r frontend/src/components resources/js/)",
+      "Bash(curl -s -H \"Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9\" \"http://127.0.0.1:8000/api/usuarios\")"
     ]
   }
 }

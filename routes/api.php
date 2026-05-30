@@ -63,6 +63,7 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('stock-bajo',    [InventarioController::class, 'stockBajo']);
         Route::get('vencimientos',  [InventarioController::class, 'alertasVencimiento']);
         Route::post('ajuste',       [InventarioController::class, 'ajustarStock']);
+        Route::get('alertas',       [InventarioController::class, 'alertas']);
     });
 
     // Turnos

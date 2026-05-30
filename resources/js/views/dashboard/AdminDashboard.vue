@@ -44,10 +44,36 @@
 
       <div class="bg-card border border-edge rounded-xl p-5">
         <h2 class="font-display text-lg text-ink font-medium mb-4">Alertas del sistema</h2>
-        <div v-if="alertas.length === 0" class="text-ink-mute text-sm py-4 text-center">Sin alertas críticas ✓</div>
-        <div v-for="a in alertas" :key="a.id" class="flex items-start gap-3 py-2 border-b border-edge last:border-0">
-          <AlertBadge :texto="a.tipo" :severidad="a.severidad" />
-          <span class="text-ink-mute text-sm flex-1">{{ a.descripcion }}</span>
+
+        <div v-if="stockBajo.length === 0 && vencimientos.length === 0" class="text-ink-mute text-sm py-4 text-center">Sin alertas críticas ✓</div>
+
+        <div v-if="stockBajo.length > 0" class="mb-4">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-ink mb-2">
+            <AlertBadge texto="Stock" severidad="err" />
+            {{ stockBajo.length }} producto(s) bajo mínimo
+          </h3>
+          <div v-for="p in stockBajo" :key="p.id" class="mb-1 last:mb-0">
+            <div class="flex items-center justify-between py-1 px-3 bg-danger/5 rounded-lg text-sm">
+              <span class="text-ink font-medium">{{ p.nombre }}</span>
+              <span class="text-ink-mute text-xs font-mono whitespace-nowrap ml-2">
+                {{ p.stock_actual }} / {{ p.stock_minimo }} {{ p.unidad_medida }}
+              </span>
+            </div>
+            <div v-if="p.menus.length > 0" class="ml-4 mt-0.5 mb-1 text-xs text-ink-dim">
+              Afecta a: <span v-for="(m, i) in p.menus" :key="m.id">{{ m.nombre }}<template v-if="i < p.menus.length - 1">, </template></span>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="vencimientos.length > 0">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-ink mb-2">
+            <AlertBadge texto="Vencimiento" severidad="warn" />
+            {{ vencimientos.length }} lote(s) vencen pronto
+          </h3>
+          <div v-for="l in vencimientos" :key="l.id" class="flex items-center justify-between py-1 px-3 bg-warning/5 rounded-lg text-sm mb-1 last:mb-0">
+            <span class="text-ink font-medium">{{ l.producto_nombre }}</span>
+            <span class="text-ink-mute text-xs font-mono whitespace-nowrap ml-2">Lote {{ l.numero_lote }} — {{ l.dias_restantes }}d</span>
+          </div>
         </div>
       </div>
     </div>
@@ -102,7 +128,8 @@ const auth = useAuthStore()
 const kpis          = ref({ ventasHoy: 'Bs. 0', deltaVentas: null, turnosActivos: 0, stockBajo: 0, stockBajoNum: 0, usuariosActivos: 0 })
 const ultimasVentas = ref([])
 const ventasSemana  = ref([0,0,0,0,0,0,0])
-const alertas       = ref([])
+const stockBajo     = ref([])
+const vencimientos  = ref([])
 const cargandoGrafico = ref(true)
 
 const primerNombre = computed(() => auth.nombreCompleto.split(' ')[0] || 'Administrador')
@@ -174,15 +201,9 @@ async function cargarGrafico() {
 }
 
 async function cargarAlertas() {
-  const [rStock, rVenc] = await Promise.allSettled([
-    client.get('/inventario/stock-bajo'),
-    client.get('/inventario/vencimientos'),
-  ])
-  const lista = []
-  const stock = rStock.status === 'fulfilled' ? (rStock.value.data.data ?? []) : []
-  const venc  = rVenc.status  === 'fulfilled' ? (rVenc.value.data.data  ?? []) : []
-  if (stock.length > 0) lista.push({ id: 'stock', tipo: 'Stock',       severidad: 'err',  descripcion: `${stock.length} producto(s) bajo mínimo` })
-  if (venc.length  > 0) lista.push({ id: 'venc',  tipo: 'Vencimiento', severidad: 'warn', descripcion: `${venc.length} lote(s) vencen en 7 días` })
-  alertas.value = lista
+  const r = await client.get('/inventario/alertas').catch(() => null)
+  const data = r?.data?.data
+  stockBajo.value    = data?.stock_bajo   ?? []
+  vencimientos.value = data?.vencimientos ?? []
 }
 </script>

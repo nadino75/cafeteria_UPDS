@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\LoteInventario;
+use App\Models\MenuIngrediente;
 use App\Models\MovimientoInventario;
 use App\Models\Producto;
 use App\Services\FifoService;
@@ -124,5 +125,64 @@ class InventarioController extends Controller
             ->get();
 
         return response()->json(['success' => true, 'data' => $productos]);
+    }
+
+    public function alertas(): JsonResponse
+    {
+        $productosBajoStock = Producto::whereColumn('stock_actual', '<=', 'stock_minimo')
+            ->where('activo', true)
+            ->with('categoria')
+            ->get();
+
+        $productIds = $productosBajoStock->pluck('id');
+
+        $menusAfectados = MenuIngrediente::whereIn('producto_id', $productIds)
+            ->with(['menu:id,nombre,activo', 'producto:id,nombre'])
+            ->get()
+            ->groupBy('producto_id');
+
+        $stockBajo = $productosBajoStock->map(function ($p) use ($menusAfectados) {
+            return [
+                'id'             => $p->id,
+                'nombre'         => $p->nombre,
+                'stock_actual'   => $p->stock_actual,
+                'stock_minimo'   => $p->stock_minimo,
+                'unidad_medida'  => $p->unidad_medida,
+                'categoria'      => $p->categoria?->nombre ?? '—',
+                'menus'          => $menusAfectados->get($p->id, collect())->map(function ($mi) {
+                    return [
+                        'id'                 => $mi->menu->id,
+                        'nombre'             => $mi->menu->nombre,
+                        'activo'             => $mi->menu->activo,
+                        'cantidad_necesaria' => (float) $mi->cantidad,
+                        'unidad'             => $mi->unidad_medida,
+                    ];
+                })->values(),
+            ];
+        });
+
+        $vencimientos = LoteInventario::with('producto')
+            ->where('estado', 'disponible')
+            ->where('fecha_vencimiento', '<=', Carbon::now()->addDays(7))
+            ->orderBy('fecha_vencimiento', 'asc')
+            ->get()
+            ->map(function ($l) {
+                return [
+                    'id'               => $l->id,
+                    'producto_nombre'  => $l->producto?->nombre ?? '—',
+                    'numero_lote'      => $l->numero_lote,
+                    'fecha_vencimiento'=> $l->fecha_vencimiento,
+                    'cantidad'         => $l->cantidad,
+                    'dias_restantes'   => (int) Carbon::now()->diffInDays($l->fecha_vencimiento),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'stock_bajo'  => $stockBajo,
+                'vencimientos'=> $vencimientos,
+            ],
+        ]);
     }
 }
