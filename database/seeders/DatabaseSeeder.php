@@ -17,5 +17,9 @@ class DatabaseSeeder extends Seeder
             UsuarioAdminSeeder::class,
             RolPermisosSeeder::class,
         ]);
+
+        // Datos demo y estadísticas (opcional, ejecutar por separado si se desea)
+        // php artisan db:seed --class=DemoSeeder
+        // php artisan db:seed --class=StatsSeeder
     }
 }
