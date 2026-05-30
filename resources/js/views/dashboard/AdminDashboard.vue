@@ -14,10 +14,6 @@
           class="px-4 py-2 bg-amber hover:bg-amber-bright text-base text-sm font-medium rounded-lg transition-colors">
           + Nuevo usuario
         </RouterLink>
-        <RouterLink to="/reportes"
-          class="px-4 py-2 border border-edge text-ink-mute hover:text-ink text-sm rounded-lg transition-colors">
-          Ver reportes
-        </RouterLink>
       </div>
     </div>
 
@@ -60,7 +56,6 @@
     <div class="bg-card border border-edge rounded-xl">
       <div class="flex items-center justify-between p-5 border-b border-edge">
         <h2 class="font-display text-lg text-ink font-medium">Últimas ventas del día</h2>
-        <RouterLink to="/ventas" class="text-amber hover:text-amber-bright text-sm transition-colors">Ver todas →</RouterLink>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
