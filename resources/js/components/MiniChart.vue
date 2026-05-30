@@ -1,9 +1,11 @@
 <template>
-  <canvas ref="canvasRef" class="w-full" style="height: 48px;" />
+  <div ref="wrapperRef" class="w-full h-full min-h-[48px]">
+    <canvas ref="canvasRef" class="w-full h-full" />
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import {
   Chart,
   LineController, BarController,
@@ -26,12 +28,17 @@ const props = defineProps({
 })
 
 const canvasRef = ref(null)
+const wrapperRef = ref(null)
 let chart = null
 
 function buildChart() {
-  if (!canvasRef.value) return
-  if (chart) chart.destroy()
-  chart = new Chart(canvasRef.value, {
+  if (!canvasRef.value || !wrapperRef.value) return
+  if (chart) { chart.destroy(); chart = null }
+
+  const ctx = canvasRef.value.getContext('2d')
+  if (!ctx) return
+
+  chart = new Chart(ctx, {
     type: props.tipo,
     data: {
       labels: props.datos.map((_, i) => i),
@@ -48,14 +55,18 @@ function buildChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      resizeObserver: true,
+      devicePixelRatio: 1,
       plugins: { legend: { display: false }, tooltip: { enabled: false } },
       scales: { x: { display: false }, y: { display: false } },
-      animation: { duration: 400 },
+      animation: { duration: 300 },
     },
   })
 }
 
-onMounted(buildChart)
-watch(() => props.datos, buildChart, { deep: true })
-onBeforeUnmount(() => { if (chart) chart.destroy() })
+onMounted(() => nextTick(buildChart))
+
+watch(() => props.datos, () => nextTick(buildChart), { deep: true })
+
+onBeforeUnmount(() => { if (chart) { chart.destroy(); chart = null } })
 </script>
