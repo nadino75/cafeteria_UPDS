@@ -117,7 +117,7 @@ const NAV_CONFIG = {
   Administrador: [
     { label: 'Dashboard',       ruta: '/dashboard/admin',  icono: I.grid },
     { grupo: 'Usuarios',   label: 'Usuarios',      ruta: '/usuarios',     icono: I.users },
-    { grupo: 'Catálogos',  label: 'Productos',     ruta: '/productos',    icono: I.tag },
+    { grupo: 'Catálogos',  label: 'Productos',     ruta: '/dashboard/productos',    icono: I.tag },
     {                      label: 'Categorías',    ruta: '/categorias',   icono: I.folder },
     {                      label: 'Menús',          ruta: '/menus',        icono: I.menu },
     { grupo: 'Operaciones',label: 'Inventario',    ruta: '/inventario',   icono: I.box },
@@ -134,7 +134,7 @@ const NAV_CONFIG = {
   Gerente: [
     { label: 'Dashboard',      ruta: '/dashboard/gerente', icono: I.grid },
     { grupo: 'Usuarios',  label: 'Usuarios',     ruta: '/usuarios',     icono: I.users },
-    { grupo: 'Catálogos', label: 'Productos',    ruta: '/productos',    icono: I.tag },
+    { grupo: 'Catálogos', label: 'Productos',    ruta: '/dashboard/productos',    icono: I.tag },
     {                     label: 'Categorías',   ruta: '/categorias',   icono: I.folder },
     {                     label: 'Menús',         ruta: '/menus',        icono: I.menu },
     { grupo: 'Operaciones', label: 'Inventario', ruta: '/inventario',   icono: I.box },
@@ -157,7 +157,7 @@ const NAV_CONFIG = {
     { label: 'Dashboard', ruta: '/dashboard/almacenista', icono: I.grid },
     { grupo: 'Inventario', label: 'Inventario',  ruta: '/inventario',  icono: I.box },
     {                      label: 'Categorías',  ruta: '/categorias',  icono: I.folder },
-    {                      label: 'Productos',   ruta: '/productos',   icono: I.tag },
+    {                      label: 'Productos',   ruta: '/dashboard/productos',   icono: I.tag },
     { grupo: 'Compras',    label: 'Compras',     ruta: '/compras',     icono: I.bag },
     {                      label: 'Proveedores', ruta: '/proveedores', icono: I.truck },
   ],

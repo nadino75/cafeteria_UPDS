@@ -45,6 +45,11 @@ const routes = [
         component: () => import('@/views/dashboard/ContadorDashboard.vue'),
         meta: { rolRequerido: 'Contador' },
       },
+{
+  path: 'productos',
+  component: () => import('@/views/productos/ProductosView.vue'),
+  meta: { rolRequerido: ['Administrador', 'Gerente', 'Almacenista'] },
+},
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: '/login' },
@@ -79,10 +84,13 @@ router.beforeEach(async to => {
     }
   }
 
-  // Verificar rol requerido por la ruta
+  // Verificar rol requerido por la ruta (string o array de roles)
   const rolRequerido = to.meta.rolRequerido
-  if (rolRequerido && auth.rol !== rolRequerido && !auth.isAdmin) {
-    return DASHBOARD_BY_ROL[auth.rol] ?? '/login'
+  if (rolRequerido && !auth.isAdmin) {
+    const roles = Array.isArray(rolRequerido) ? rolRequerido : [rolRequerido]
+    if (!roles.includes(auth.rol)) {
+      return DASHBOARD_BY_ROL[auth.rol] ?? '/login'
+    }
   }
 
   return true
