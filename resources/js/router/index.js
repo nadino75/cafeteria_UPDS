@@ -65,6 +65,11 @@ const routes = [
         component: () => import('@/views/proveedores/ProveedoresView.vue'),
         meta: { rolRequerido: ['Administrador', 'Gerente', 'Almacenista'] },
       },
+      {
+        path: 'clientes',
+        component: () => import('@/views/clientes/ClientesView.vue'),
+        meta: { rolRequerido: ['Administrador', 'Gerente', 'Cajero'] },
+      },
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: '/login' },
