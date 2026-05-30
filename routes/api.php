@@ -25,6 +25,9 @@ Route::prefix('auth')->group(function () {
 // ==========================================
 // Rutas protegidas (requieren JWT)
 // ==========================================
+// ⚠️  TEMPORAL: Middlewares de permisos comentados
+// La tabla `permisos` no existe aún. Ver DEBUG_REPORT.md para plan de implementación.
+// TODO: Restaurar middlewares cuando tabla permisos esté implementada.
 Route::middleware('jwt.auth')->group(function () {
 
     // Auth
