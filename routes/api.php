@@ -34,87 +34,64 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
 
-    // Categorías — módulo: inventario/menus
-    Route::apiResource('categorias', CategoriaController::class)
-        ->middleware([
-            'index,show:permisos:inventario,leer',
-            'store:permisos:inventario,crear',
-            'update:permisos:inventario,editar',
-            'destroy:permisos:inventario,eliminar',
-        ]);
+    // Categorías
+    Route::apiResource('categorias', CategoriaController::class);
 
-    // Clientes — módulo: clientes
+    // Clientes
     Route::apiResource('clientes', ClienteController::class)->except(['destroy']);
-    Route::post('clientes/{cliente}/canjear-puntos', [ClienteController::class, 'canjearPuntos'])
-        ->middleware('permisos:clientes,editar');
+    Route::post('clientes/{cliente}/canjear-puntos', [ClienteController::class, 'canjearPuntos']);
 
-    // Proveedores — módulo: compras
-    Route::apiResource('proveedores', ProveedorController::class)
-        ->middleware('permisos:compras,leer');
+    // Proveedores
+    Route::apiResource('proveedores', ProveedorController::class);
 
-    // Productos — módulo: inventario
-    Route::middleware('permisos:inventario,leer')->group(function () {
-        Route::apiResource('productos', ProductoController::class);
-    });
+    // Productos
+    Route::apiResource('productos', ProductoController::class);
 
-    // Menús — módulo: menus
-    Route::middleware('permisos:menus,leer')->group(function () {
-        Route::apiResource('menus', MenuController::class);
-    });
+    // Menús
+    Route::apiResource('menus', MenuController::class);
 
-    // Usuarios — módulo: usuarios (solo admin/gerente)
-    Route::middleware('permisos:usuarios,leer')->group(function () {
-        Route::apiResource('usuarios', UsuarioController::class);
-    });
+    // Usuarios
+    Route::apiResource('usuarios', UsuarioController::class);
 
-    // Inventario — módulo: inventario
-    Route::prefix('inventario')->middleware('permisos:inventario,leer')->group(function () {
+    // Inventario
+    Route::prefix('inventario')->group(function () {
         Route::get('lotes',         [InventarioController::class, 'lotes']);
         Route::get('movimientos',   [InventarioController::class, 'movimientos']);
         Route::get('stock-bajo',    [InventarioController::class, 'stockBajo']);
         Route::get('vencimientos',  [InventarioController::class, 'alertasVencimiento']);
-        Route::post('ajuste',       [InventarioController::class, 'ajustarStock'])
-            ->middleware('permisos:inventario,editar');
+        Route::post('ajuste',       [InventarioController::class, 'ajustarStock']);
     });
 
-    // Turnos — módulo: turnos
-    Route::prefix('turnos')->middleware('permisos:turnos,leer')->group(function () {
+    // Turnos
+    Route::prefix('turnos')->group(function () {
         Route::get('/',          [TurnoController::class, 'index']);
         Route::get('activo',     [TurnoController::class, 'miTurnoActivo']);
         Route::get('{turno}',    [TurnoController::class, 'show']);
-        Route::post('abrir',     [TurnoController::class, 'abrir'])
-            ->middleware('permisos:turnos,crear');
-        Route::post('{turno}/cerrar', [TurnoController::class, 'cerrar'])
-            ->middleware('permisos:turnos,aprobar');
+        Route::post('abrir',     [TurnoController::class, 'abrir']);
+        Route::post('{turno}/cerrar', [TurnoController::class, 'cerrar']);
     });
 
-    // Ventas — módulo: ventas
-    Route::prefix('ventas')->middleware('permisos:ventas,leer')->group(function () {
+    // Ventas
+    Route::prefix('ventas')->group(function () {
         Route::get('/',             [VentaController::class, 'index']);
         Route::get('{venta}',       [VentaController::class, 'show']);
-        Route::post('/',            [VentaController::class, 'store'])
-            ->middleware('permisos:ventas,crear');
-        Route::patch('{venta}/cancelar', [VentaController::class, 'cancelar'])
-            ->middleware('permisos:ventas,editar');
+        Route::post('/',            [VentaController::class, 'store']);
+        Route::patch('{venta}/cancelar', [VentaController::class, 'cancelar']);
     });
 
-    // Compras — módulo: compras
-    Route::prefix('compras')->middleware('permisos:compras,leer')->group(function () {
+    // Compras
+    Route::prefix('compras')->group(function () {
         Route::get('/',                      [CompraController::class, 'index']);
         Route::get('{compra}',               [CompraController::class, 'show']);
-        Route::post('/',                     [CompraController::class, 'store'])
-            ->middleware('permisos:compras,crear');
-        Route::post('{compra}/recibir',      [CompraController::class, 'recibirCompra'])
-            ->middleware('permisos:compras,aprobar');
+        Route::post('/',                     [CompraController::class, 'store']);
+        Route::post('{compra}/recibir',      [CompraController::class, 'recibirCompra']);
     });
 
-    // Gastos operativos — módulo: gastos
-    Route::middleware('permisos:gastos,leer')->group(function () {
-        Route::apiResource('gastos', GastoOperativoController::class);
-    });
+    // Gastos operativos
+    Route::apiResource('gastos', GastoOperativoController::class);
 
-    // Reportes — módulo: reportes
-    Route::prefix('reportes')->middleware('permisos:reportes,leer')->group(function () {
+    // Reportes
+    Route::prefix('reportes')->group(function () {
         Route::get('ventas-diarias',       [ReporteController::class, 'ventasDiarias']);
         Route::get('productos-vendidos',   [ReporteController::class, 'productosMasVendidos']);
         Route::get('balance-diario',       [ReporteController::class, 'balanceDiario']);
