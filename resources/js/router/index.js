@@ -60,6 +60,11 @@ const routes = [
         component: () => import('@/views/categorias/CategoriasView.vue'),
         meta: { rolRequerido: ['Administrador', 'Gerente', 'Almacenista'] },
       },
+      {
+        path: 'proveedores',
+        component: () => import('@/views/proveedores/ProveedoresView.vue'),
+        meta: { rolRequerido: ['Administrador', 'Gerente', 'Almacenista'] },
+      },
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: '/login' },
