@@ -45,11 +45,16 @@ const routes = [
         component: () => import('@/views/dashboard/ContadorDashboard.vue'),
         meta: { rolRequerido: 'Contador' },
       },
-{
-  path: 'productos',
-  component: () => import('@/views/productos/ProductosView.vue'),
-  meta: { rolRequerido: ['Administrador', 'Gerente', 'Almacenista'] },
-},
+      {
+        path: 'productos',
+        component: () => import('@/views/productos/ProductosView.vue'),
+        meta: { rolRequerido: ['Administrador', 'Gerente', 'Almacenista'] },
+      },
+      {
+        path: 'usuarios',
+        component: () => import('@/views/usuarios/UsuariosView.vue'),
+        meta: { rolRequerido: ['Administrador', 'Gerente'] },
+      },
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: '/login' },
