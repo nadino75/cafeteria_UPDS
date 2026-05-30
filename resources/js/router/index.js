@@ -96,6 +96,11 @@ const routes = [
         meta: { rolRequerido: ['Administrador', 'Gerente', 'Almacenista'] },
       },
       {
+        path: 'reportes',
+        component: () => import('@/views/reportes/ReportesView.vue'),
+        meta: { rolRequerido: ['Administrador', 'Gerente', 'Contador'] },
+      },
+      {
         path: 'inventario',
         component: () => import('@/views/inventario/InventarioView.vue'),
         meta: { rolRequerido: ['Administrador', 'Gerente', 'Almacenista'] },

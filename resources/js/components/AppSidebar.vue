@@ -127,7 +127,7 @@ const NAV_CONFIG = {
     {                      label: 'Clientes',       ruta: '/dashboard/clientes',     icono: I.users },
     {                      label: 'Gastos',         ruta: '/dashboard/gastos',       icono: I.banknote },
     { grupo: 'Finanzas',   label: 'Contabilidad',  ruta: '/contabilidad', icono: I.calc },
-    {                      label: 'Reportes',       ruta: '/reportes',     icono: I.chart },
+    {                      label: 'Reportes',       ruta: '/dashboard/reportes',     icono: I.chart },
     { grupo: 'Sistema',    label: 'Roles & Permisos', ruta: '/roles',     icono: I.shield, disabled: true },
     {                      label: 'Configuración',  ruta: '/config',       icono: I.cog,    disabled: true },
   ],
@@ -144,7 +144,7 @@ const NAV_CONFIG = {
     {                     label: 'Clientes',      ruta: '/dashboard/clientes',     icono: I.users },
     {                     label: 'Gastos',        ruta: '/dashboard/gastos',       icono: I.banknote },
     { grupo: 'Finanzas',  label: 'Contabilidad', ruta: '/contabilidad', icono: I.calc },
-    {                     label: 'Reportes',      ruta: '/reportes',     icono: I.chart },
+    {                     label: 'Reportes',      ruta: '/dashboard/reportes',     icono: I.chart },
   ],
   Cajero: [
     { label: 'Dashboard', ruta: '/dashboard/cajero', icono: I.grid },
@@ -164,7 +164,7 @@ const NAV_CONFIG = {
   Contador: [
     { label: 'Dashboard',    ruta: '/dashboard/contador', icono: I.grid },
     { grupo: 'Finanzas', label: 'Contabilidad', ruta: '/contabilidad', icono: I.calc },
-    {                    label: 'Reportes',      ruta: '/reportes',     icono: I.chart },
+    {                    label: 'Reportes',      ruta: '/dashboard/reportes',     icono: I.chart },
   ],
 }
 
