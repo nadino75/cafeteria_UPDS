@@ -7,7 +7,6 @@
     <div class="bg-card border rounded-xl p-6" :class="turnoActivo ? 'border-ok/30' : 'border-edge'">
       <div v-if="cargandoTurno" class="text-ink-mute text-sm">Verificando turno...</div>
 
-      <!-- Sin turno -->
       <div v-else-if="!turnoActivo" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <p class="text-ink font-medium">Sin turno activo</p>
@@ -19,20 +18,20 @@
         </button>
       </div>
 
-      <!-- Turno activo -->
       <div v-else>
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
           <div class="flex items-center gap-3">
             <span class="w-2.5 h-2.5 rounded-full bg-ok animate-pulse" />
             <span class="text-ok font-medium text-sm uppercase tracking-wider">Turno activo</span>
+            <span class="text-ink-dim text-xs font-mono ml-2">{{ turnoActivo.codigo }}</span>
           </div>
           <div class="flex gap-2">
-            <button @click="modalNuevaVenta = true"
-              class="px-5 py-2.5 bg-amber hover:bg-amber-bright text-base font-medium rounded-lg transition-colors text-sm">
+            <button @click="abrirPOS"
+              class="px-6 py-3 bg-amber hover:bg-amber-bright text-base font-medium rounded-lg transition-colors text-sm whitespace-nowrap">
               + Nueva venta
             </button>
             <button @click="modalCerrarTurno = true"
-              class="px-5 py-2.5 border border-err/40 text-err hover:bg-err/10 rounded-lg transition-colors text-sm">
+              class="px-5 py-3 border border-err/40 text-err hover:bg-err/10 rounded-lg transition-colors text-sm">
               Cerrar turno
             </button>
           </div>
@@ -58,37 +57,41 @@
       </div>
     </div>
 
-    <!-- Tabla ventas del turno (solo lectura) -->
-    <div v-if="turnoActivo" class="bg-card border border-edge rounded-xl">
-      <div class="p-5 border-b border-edge">
-        <h2 class="font-display text-lg text-ink font-medium">Ventas del turno</h2>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-ink-dim text-xs uppercase tracking-wider">
-              <th class="text-left px-5 py-3">Hora</th>
-              <th class="text-left px-5 py-3">Método</th>
-              <th class="text-left px-5 py-3">Cliente</th>
-              <th class="text-right px-5 py-3">Total</th>
-              <th class="text-left px-5 py-3">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="ventasTurno.length === 0">
-              <td colspan="5" class="px-5 py-8 text-center text-ink-mute">Sin ventas en este turno</td>
-            </tr>
-            <tr v-for="v in ventasTurno" :key="v.id" class="border-t border-edge">
-              <td class="px-5 py-3 font-mono text-ink-mute text-xs">{{ formatHora(v.fecha) }}</td>
-              <td class="px-5 py-3 text-ink capitalize">{{ v.metodo_pago }}</td>
-              <td class="px-5 py-3 text-ink-mute">{{ v.cliente?.nombre ?? '—' }}</td>
-              <td class="px-5 py-3 text-right font-mono text-amber">Bs. {{ Number(v.total).toFixed(2) }}</td>
-              <td class="px-5 py-3">
-                <AlertBadge :texto="v.estado" :severidad="v.estado === 'completada' ? 'ok' : 'err'" />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- Ventas del turno (colapsable) -->
+    <div v-if="turnoActivo">
+      <button @click="verVentas = !verVentas"
+        class="flex items-center gap-2 text-ink-mute hover:text-ink text-sm transition-colors">
+        <span class="inline-block transition-transform" :class="verVentas ? 'rotate-90' : ''">▶</span>
+        Ventas del turno ({{ ventasTurno.length }})
+      </button>
+      <div v-if="verVentas" class="mt-3 bg-card border border-edge rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-ink-dim text-xs uppercase tracking-wider">
+                <th class="text-left px-5 py-3">Hora</th>
+                <th class="text-left px-5 py-3">Método</th>
+                <th class="text-left px-5 py-3">Cliente</th>
+                <th class="text-right px-5 py-3">Total</th>
+                <th class="text-left px-5 py-3">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="ventasTurno.length === 0">
+                <td colspan="5" class="px-5 py-8 text-center text-ink-mute">Sin ventas en este turno</td>
+              </tr>
+              <tr v-for="v in ventasTurno" :key="v.id" class="border-t border-edge">
+                <td class="px-5 py-3 font-mono text-ink-mute text-xs">{{ formatHora(v.fecha) }}</td>
+                <td class="px-5 py-3 text-ink capitalize">{{ v.metodo_pago }}</td>
+                <td class="px-5 py-3 text-ink-mute">{{ v.cliente?.nombre ?? '—' }}</td>
+                <td class="px-5 py-3 text-right font-mono text-amber">Bs. {{ Number(v.total).toFixed(2) }}</td>
+                <td class="px-5 py-3">
+                  <AlertBadge :texto="v.estado" :severidad="v.estado === 'completada' ? 'ok' : 'err'" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -142,55 +145,95 @@
       </div>
     </Teleport>
 
-    <!-- Modal: Nueva venta -->
+    <!-- Pantalla completa de venta (POS) -->
     <Teleport to="body">
-      <div v-if="modalNuevaVenta" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-card border border-edge rounded-2xl w-full max-w-lg p-6 overflow-y-auto max-h-[90vh]">
-          <h3 class="font-display text-xl text-ink font-medium mb-4">Nueva venta</h3>
-          <label class="block text-ink-mute text-sm mb-1.5">Método de pago</label>
-          <select v-model="nuevaVenta.metodo_pago"
-            class="w-full bg-elevated border border-edge rounded-lg px-4 py-3 text-ink text-sm focus:outline-none focus:border-amber mb-4">
-            <option value="efectivo">Efectivo</option>
-            <option value="tarjeta">Tarjeta</option>
-            <option value="transferencia">Transferencia</option>
-            <option value="mixto">Mixto</option>
-          </select>
-          <p class="text-ink-mute text-sm mb-2">Selecciona ítems:</p>
-          <div class="grid grid-cols-2 gap-2 mb-4 max-h-48 overflow-y-auto">
-            <button v-for="m in menus" :key="m.id" @click="agregarItem(m)"
-              class="text-left p-3 bg-elevated hover:bg-amber/10 border border-edge hover:border-amber/30 rounded-lg transition-colors">
-              <p class="text-ink text-sm font-medium truncate">{{ m.nombre }}</p>
-              <p class="text-amber font-mono text-xs mt-0.5">Bs. {{ Number(m.precio_venta).toFixed(2) }}</p>
-            </button>
-          </div>
-          <div v-if="nuevaVenta.items.length > 0" class="mb-4">
-            <p class="text-ink-mute text-sm mb-2">Items seleccionados:</p>
-            <div v-for="(item, i) in nuevaVenta.items" :key="i"
-              class="flex items-center justify-between py-1.5 border-b border-edge">
-              <span class="text-ink text-sm truncate mr-2">{{ item.nombre }}</span>
-              <div class="flex items-center gap-1 shrink-0">
-                <button @click="item.cantidad = Math.max(1, item.cantidad - 1)" class="text-ink-mute hover:text-ink px-1.5 py-0.5 rounded">−</button>
-                <span class="font-mono text-ink text-sm w-6 text-center">{{ item.cantidad }}</span>
-                <button @click="item.cantidad++" class="text-ink-mute hover:text-ink px-1.5 py-0.5 rounded">+</button>
-                <span class="font-mono text-amber text-xs ml-2">Bs. {{ (item.precio_unitario * item.cantidad).toFixed(2) }}</span>
-                <button @click="nuevaVenta.items.splice(i, 1)" class="text-ink-dim hover:text-err ml-1">×</button>
-              </div>
-            </div>
-            <div class="flex justify-between mt-2 pt-2 border-t border-edge">
-              <span class="text-ink-mute text-sm">Total</span>
-              <span class="font-mono text-amber font-medium">Bs. {{ totalNuevaVenta }}</span>
-            </div>
-          </div>
-          <p v-if="errorModal" class="text-err text-sm mb-3">{{ errorModal }}</p>
-          <div class="flex gap-3">
-            <button @click="modalNuevaVenta = false; errorModal = null; nuevaVenta.items = []"
-              class="flex-1 border border-edge text-ink-mute py-2.5 rounded-lg text-sm hover:text-ink transition-colors">Cancelar</button>
-            <button @click="confirmarVenta" :disabled="loadingModal || nuevaVenta.items.length === 0"
-              class="flex-1 bg-amber hover:bg-amber-bright text-base font-medium py-2.5 rounded-lg text-sm disabled:opacity-50 transition-colors">
-              {{ loadingModal ? 'Registrando...' : 'Confirmar venta' }}
-            </button>
+      <div v-if="modoVenta" class="fixed inset-0 z-50 bg-base flex flex-col">
+
+        <!-- Barra superior -->
+        <div class="flex items-center justify-between px-6 py-3 border-b border-edge bg-card shrink-0">
+          <button @click="cerrarPOS" class="flex items-center gap-2 text-ink-mute hover:text-ink transition-colors text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Volver
+          </button>
+          <div class="flex items-center gap-4">
+            <span class="text-ink-dim text-xs font-mono">{{ turnoActivo?.codigo }}</span>
+            <select v-model="nuevaVenta.metodo_pago"
+              class="bg-elevated border border-edge rounded-lg px-3 py-1.5 text-ink text-sm focus:outline-none focus:border-amber">
+              <option value="efectivo">Efectivo</option>
+              <option value="tarjeta">Tarjeta</option>
+              <option value="transferencia">Transferencia</option>
+              <option value="mixto">Mixto</option>
+            </select>
+            <AlertBadge texto="Abierto" severidad="ok" />
           </div>
         </div>
+
+        <!-- Cuerpo: split menús + carrito -->
+        <div class="flex flex-1 overflow-hidden">
+          <!-- Menús -->
+          <div class="flex-1 flex flex-col p-4 overflow-hidden">
+            <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 flex-1 overflow-y-auto pr-2 content-start">
+              <MenuCard v-for="m in menusFiltrados" :key="m.id" :menu="m" @click="agregarItem(m)" />
+              <div v-if="menusFiltrados.length === 0"
+                class="col-span-full py-16 text-center text-ink-dim text-sm">Sin resultados</div>
+            </div>
+            <!-- Buscador -->
+            <div class="relative mt-4 shrink-0">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-dim" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input v-model="busquedaMenu" type="text" placeholder="Buscar menú..."
+                class="w-full bg-elevated border border-edge rounded-lg pl-10 pr-4 py-3 text-ink text-sm focus:outline-none focus:border-amber" />
+            </div>
+          </div>
+
+          <!-- Carrito -->
+          <div class="w-80 border-l border-edge bg-card flex flex-col shrink-0">
+            <div class="p-4 border-b border-edge">
+              <h3 class="text-ink font-medium text-sm">Items seleccionados</h3>
+            </div>
+
+            <div v-if="nuevaVenta.items.length === 0" class="flex-1 flex items-center justify-center p-4">
+              <p class="text-ink-dim text-sm text-center">Selecciona un menú de la lista</p>
+            </div>
+
+            <div v-else class="flex-1 overflow-y-auto p-4 space-y-3">
+              <div v-for="(item, i) in nuevaVenta.items" :key="i"
+                class="flex items-start justify-between gap-2 pb-3 border-b border-edge last:border-0">
+                <div class="flex-1 min-w-0">
+                  <p class="text-ink text-sm font-medium truncate">{{ item.nombre }}</p>
+                  <div class="flex items-center gap-1 mt-1.5">
+                    <button @click="item.cantidad = Math.max(1, item.cantidad - 1)"
+                      class="w-7 h-7 flex items-center justify-center rounded bg-elevated border border-edge text-ink-mute hover:text-ink text-sm transition-colors">−</button>
+                    <span class="font-mono text-ink text-sm w-6 text-center tabular-nums">{{ item.cantidad }}</span>
+                    <button @click="item.cantidad++"
+                      class="w-7 h-7 flex items-center justify-center rounded bg-elevated border border-edge text-ink-mute hover:text-ink text-sm transition-colors">+</button>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="font-mono text-amber text-sm">Bs. {{ (item.precio_unitario * item.cantidad).toFixed(2) }}</p>
+                  <button @click="nuevaVenta.items.splice(i, 1)"
+                    class="text-ink-dim hover:text-err text-xs mt-1 transition-colors">Eliminar</button>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="nuevaVenta.items.length > 0" class="p-4 border-t border-edge space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-ink font-medium">Total</span>
+                <span class="font-mono text-amber text-xl font-bold">Bs. {{ totalNuevaVenta }}</span>
+              </div>
+              <p v-if="errorModal" class="text-err text-xs">{{ errorModal }}</p>
+              <button @click="confirmarVenta" :disabled="loadingModal || nuevaVenta.items.length === 0"
+                class="w-full py-3 bg-amber hover:bg-amber-bright text-base font-medium rounded-lg text-sm disabled:opacity-50 transition-colors">
+                {{ loadingModal ? 'Registrando...' : 'Confirmar venta' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </Teleport>
 
@@ -201,6 +244,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import client from '@/api/client.js'
 import AlertBadge from '@/components/AlertBadge.vue'
+import MenuCard from '@/components/MenuCard.vue'
 
 const turnoActivo    = ref(null)
 const ventasTurno    = ref([])
@@ -210,8 +254,16 @@ const loadingModal   = ref(false)
 const errorModal     = ref(null)
 const modalAbrirTurno  = ref(false)
 const modalCerrarTurno = ref(false)
-const modalNuevaVenta  = ref(false)
-const cajaInicial      = ref(0)
+const modoVenta      = ref(false)
+const verVentas      = ref(false)
+const busquedaMenu   = ref('')
+const cajaInicial    = ref(0)
+
+const menusFiltrados = computed(() => {
+  const q = busquedaMenu.value.toLowerCase().trim()
+  if (!q) return menus.value
+  return menus.value.filter(m => m.nombre.toLowerCase().includes(q))
+})
 
 const corte = reactive({
   total_efectivo_contado: 0, total_real: 0, total_tarjeta: 0, total_transferencia: 0,
@@ -242,6 +294,19 @@ const totalNuevaVenta = computed(() =>
 
 function formatHora(iso) {
   return new Date(iso).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' })
+}
+
+function abrirPOS() {
+  busquedaMenu.value = ''
+  nuevaVenta.metodo_pago = 'efectivo'
+  nuevaVenta.items = []
+  errorModal.value = null
+  modoVenta.value = true
+}
+
+function cerrarPOS() {
+  modoVenta.value = false
+  errorModal.value = null
 }
 
 function agregarItem(menu) {
@@ -306,7 +371,7 @@ async function confirmarVenta() {
       metodo_pago: nuevaVenta.metodo_pago,
       items:       nuevaVenta.items.map(i => ({ tipo: i.tipo, id: i.id, cantidad: i.cantidad, precio_unitario: i.precio_unitario })),
     })
-    modalNuevaVenta.value = false; nuevaVenta.items = []
+    nuevaVenta.items = []
     await cargarVentasTurno()
   } catch (e) { errorModal.value = e.response?.data?.message ?? 'Error al registrar la venta.' }
   finally { loadingModal.value = false }

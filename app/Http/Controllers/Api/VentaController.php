@@ -16,7 +16,15 @@ class VentaController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $usuario = JWTAuth::parseToken()->authenticate();
+        $esAdmin = $usuario->rol?->es_superadmin === true;
+        $esGerente = $usuario->rol?->nombre === 'Gerente';
+
         $query = Venta::with(['usuario', 'cliente', 'detalles']);
+
+        if (!$esAdmin && !$esGerente) {
+            $query->where('usuario_id', $usuario->id);
+        }
 
         if ($request->has('turno_id')) {
             $query->where('turno_id', $request->turno_id);

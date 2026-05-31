@@ -22,6 +22,7 @@
           <thead>
             <tr class="text-ink-dim text-xs uppercase tracking-wider bg-elevated/50">
               <th class="text-left px-5 py-3">Nombre</th>
+              <th class="text-center px-5 py-3">Imagen</th>
               <th class="text-left px-5 py-3">Categoría</th>
               <th class="text-right px-5 py-3">Precio Venta</th>
               <th class="text-center px-5 py-3">Ingredientes</th>
@@ -32,11 +33,16 @@
           </thead>
           <tbody>
             <tr v-if="menusFiltrados.length === 0">
-              <td colspan="7" class="px-5 py-8 text-center text-ink-mute">Sin menús registrados</td>
+              <td colspan="8" class="px-5 py-8 text-center text-ink-mute">Sin menús registrados</td>
             </tr>
             <tr v-for="m in menusFiltrados" :key="m.id"
               class="border-t border-edge hover:bg-elevated/30 transition-colors">
               <td class="px-5 py-3 text-ink font-medium">{{ m.nombre }}</td>
+              <td class="px-5 py-3 text-center">
+                <img v-if="m.imagen_url" :src="m.imagen_url" class="w-10 h-10 rounded-lg object-cover border border-edge inline-block"
+                  @error="($event.target.style.display='none')" />
+                <span v-else class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-elevated text-ink-dim/30 text-xs">—</span>
+              </td>
               <td class="px-5 py-3">
                 <span class="inline-flex px-2 py-0.5 rounded text-xs bg-elevated text-ink-mute border border-edge">
                   {{ m.categoria?.nombre || '—' }}
@@ -102,9 +108,20 @@
               class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
           </div>
           <div>
-            <label class="block text-ink-mute text-sm mb-1">Imagen URL</label>
-            <input v-model="form.imagen_url" type="text" placeholder="https://..."
-              class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
+            <label class="block text-ink-mute text-sm mb-1">Imagen</label>
+            <div class="flex flex-col gap-2">
+              <input v-model="form.imagen_url" type="text" placeholder="https://..."
+                class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
+              <label class="flex items-center gap-2 text-ink-mute text-sm cursor-pointer hover:text-ink transition-colors">
+                <span class="px-3 py-2 bg-elevated border border-edge rounded-lg text-xs hover:border-amber/30 transition-colors">Subir archivo</span>
+                <input type="file" accept="image/jpeg,image/png,image/webp" @change="onImagenFileChange" class="hidden" />
+                <span v-if="imagenFile" class="text-xs text-ink-dim truncate">{{ imagenFile.name }}</span>
+              </label>
+            </div>
+            <div v-if="imagenPreview || form.imagen_url" class="mt-2 rounded-lg overflow-hidden border border-edge w-32 h-24 bg-elevated">
+              <img v-if="imagenPreview" :src="imagenPreview" class="w-full h-full object-cover" />
+              <img v-else :src="form.imagen_url" class="w-full h-full object-cover" @error="($event.target.style.display='none')" />
+            </div>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
@@ -200,6 +217,8 @@ const modalAbierto = ref(false)
 const modoEdicion  = ref(false)
 const guardando    = ref(false)
 const errorForm    = ref(null)
+const imagenPreview = ref(null)
+const imagenFile   = ref(null)
 const form         = ref({
   nombre: '',
   descripcion: '',
@@ -244,15 +263,31 @@ function abrirModal(menu = null) {
 function cerrarModal() {
   modalAbierto.value = false
   errorForm.value = null
+  imagenPreview.value = null
+  imagenFile.value = null
+}
+
+function onImagenFileChange(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  imagenFile.value = file
+  const reader = new FileReader()
+  reader.onload = (ev) => { imagenPreview.value = ev.target.result }
+  reader.readAsDataURL(file)
 }
 
 async function guardar() {
   guardando.value = true; errorForm.value = null
   try {
+    const hasFile = imagenFile.value !== null
+    const payload = hasFile ? buildFormData() : { ...form.value }
+    const config  = hasFile ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
+
     if (modoEdicion.value) {
-      await client.put(`/menus/${form.value._id}`, form.value)
+      if (hasFile) payload.append('_method', 'PUT')
+      await client.post(`/menus/${form.value._id}`, payload, config)
     } else {
-      await client.post('/menus', form.value)
+      await client.post('/menus', payload, config)
     }
     cerrarModal()
     await cargarMenus()
@@ -264,6 +299,21 @@ async function guardar() {
       errorForm.value = e.response?.data?.message || 'Error al guardar el menú.'
     }
   } finally { guardando.value = false }
+}
+
+function buildFormData() {
+  const fd = new FormData()
+  fd.append('imagen', imagenFile.value)
+  ;['nombre', 'descripcion', 'categoria_id', 'precio_venta', 'imagen_url',
+    'disponible_desde', 'disponible_hasta'].forEach(k => {
+    if (form.value[k] != null && form.value[k] !== '') fd.append(k, form.value[k])
+  })
+  form.value.ingredientes.forEach((ing, i) => {
+    fd.append(`ingredientes[${i}][producto_id]`, ing.producto_id)
+    fd.append(`ingredientes[${i}][cantidad]`, ing.cantidad)
+    fd.append(`ingredientes[${i}][unidad_medida]`, ing.unidad_medida || '')
+  })
+  return fd
 }
 
 async function desactivar(menu) {

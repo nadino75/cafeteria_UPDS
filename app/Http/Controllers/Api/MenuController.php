@@ -8,7 +8,9 @@ use App\Models\Producto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class MenuController extends Controller
 {
@@ -26,6 +28,20 @@ class MenuController extends Controller
         ]);
     }
 
+    private function handleImagen(Request $request): ?string
+    {
+        if ($request->hasFile('imagen')) {
+            $file = $request->file('imagen');
+            $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('menus', $name, 'public');
+            return '/storage/' . $path;
+        }
+        if ($request->filled('imagen_url')) {
+            return $request->imagen_url;
+        }
+        return null;
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -34,6 +50,7 @@ class MenuController extends Controller
             'categoria_id'       => 'nullable|exists:categorias,id',
             'precio_venta'       => 'required|numeric|min:0',
             'imagen_url'         => 'nullable|string|max:255',
+            'imagen'             => 'nullable|image|mimes:jpeg,png,webp|max:2048',
             'disponible_desde'   => 'date_format:H:i',
             'disponible_hasta'   => 'date_format:H:i',
             'ingredientes'       => 'required|array|min:1',
@@ -46,11 +63,14 @@ class MenuController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $menu = DB::transaction(function () use ($request) {
-            $menu = Menu::create($request->only([
-                'nombre', 'descripcion', 'categoria_id', 'precio_venta',
-                'imagen_url', 'disponible_desde', 'disponible_hasta',
-            ]));
+        $data = $request->only([
+            'nombre', 'descripcion', 'categoria_id', 'precio_venta',
+            'disponible_desde', 'disponible_hasta',
+        ]);
+        $data['imagen_url'] = $this->handleImagen($request);
+
+        $menu = DB::transaction(function () use ($request, $data) {
+            $menu = Menu::create($data);
 
             foreach ($request->ingredientes as $ing) {
                 $menu->ingredientes()->create([
@@ -79,10 +99,23 @@ class MenuController extends Controller
 
     public function update(Request $request, Menu $menu): JsonResponse
     {
-        $menu->update($request->only([
+        $validator = Validator::make($request->all(), [
+            'imagen' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        $data = $request->only([
             'nombre', 'descripcion', 'categoria_id', 'precio_venta',
-            'imagen_url', 'disponible_desde', 'disponible_hasta', 'activo',
-        ]));
+            'disponible_desde', 'disponible_hasta', 'activo',
+        ]);
+
+        if ($request->hasFile('imagen') || $request->filled('imagen_url')) {
+            $data['imagen_url'] = $this->handleImagen($request);
+        }
+
+        $menu->update($data);
 
         if ($request->has('ingredientes')) {
             DB::transaction(function () use ($request, $menu) {
