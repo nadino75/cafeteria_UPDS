@@ -1,6 +1,6 @@
 <template>
-  <div ref="wrapperRef" class="w-full h-full min-h-[48px]">
-    <canvas ref="canvasRef" class="w-full h-full" />
+  <div ref="wrapperRef" style="width:100%;height:100%;min-height:48px;position:relative;">
+    <canvas ref="canvasRef" style="width:100%;height:100%;display:block;" />
   </div>
 </template>
 
@@ -33,6 +33,10 @@ let chart = null
 
 function buildChart() {
   if (!canvasRef.value || !wrapperRef.value) return
+  const w = wrapperRef.value.clientWidth
+  const h = wrapperRef.value.clientHeight
+  if (w < 10 || h < 10) return
+
   if (chart) { chart.destroy(); chart = null }
 
   const ctx = canvasRef.value.getContext('2d')
@@ -55,7 +59,6 @@ function buildChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      resizeObserver: true,
       devicePixelRatio: 1,
       plugins: { legend: { display: false }, tooltip: { enabled: false } },
       scales: { x: { display: false }, y: { display: false } },
@@ -64,9 +67,27 @@ function buildChart() {
   })
 }
 
-onMounted(() => nextTick(buildChart))
+function tryBuild(attempts = 0) {
+  if (attempts > 20) return
+  if (!wrapperRef.value) return
+  const w = wrapperRef.value.clientWidth
+  const h = wrapperRef.value.clientHeight
+  if (w >= 10 && h >= 10) {
+    buildChart()
+  } else {
+    setTimeout(() => tryBuild(attempts + 1), 80)
+  }
+}
 
-watch(() => props.datos, () => nextTick(buildChart), { deep: true })
+onMounted(() => {
+  nextTick(() => tryBuild(0))
+})
 
-onBeforeUnmount(() => { if (chart) { chart.destroy(); chart = null } })
+watch(() => props.datos, () => {
+  nextTick(() => tryBuild(0))
+}, { deep: true })
+
+onBeforeUnmount(() => {
+  if (chart) { chart.destroy(); chart = null }
+})
 </script>

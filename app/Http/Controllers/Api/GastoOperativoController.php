@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\GastoOperativo;
+use App\Services\ContabilidadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -11,6 +12,8 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class GastoOperativoController extends Controller
 {
+    public function __construct(private ContabilidadService $contabilidad) {}
+
     public function index(Request $request): JsonResponse
     {
         $query = GastoOperativo::with(['turno', 'usuario']);
@@ -51,6 +54,12 @@ class GastoOperativoController extends Controller
             $request->only(['turno_id', 'categoria', 'descripcion', 'monto', 'comprobante_url']),
             ['usuario_id' => $usuario->id]
         ));
+
+        try {
+            $this->contabilidad->generarAsientoGasto($gasto);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json(['success' => true, 'data' => $gasto->load('turno')], 201);
     }

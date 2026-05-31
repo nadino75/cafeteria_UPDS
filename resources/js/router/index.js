@@ -43,7 +43,7 @@ const routes = [
       {
         path: 'contador',
         component: () => import('@/views/dashboard/ContadorDashboard.vue'),
-        meta: { rolRequerido: 'Contador' },
+        meta: { rolRequerido: ['Administrador', 'Gerente', 'Contador'] },
       },
       {
         path: 'productos',

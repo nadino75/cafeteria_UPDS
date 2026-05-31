@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\ClienteController;
 use App\Http\Controllers\Api\CompraController;
+use App\Http\Controllers\Api\ContabilidadController;
 use App\Http\Controllers\Api\GastoOperativoController;
 use App\Http\Controllers\Api\InventarioController;
 use App\Http\Controllers\Api\MenuController;
@@ -101,5 +102,16 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('balance-diario',       [ReporteController::class, 'balanceDiario']);
         Route::get('resumen-mensual',      [ReporteController::class, 'resumenMensual']);
         Route::get('cierres-diarios',      [ReporteController::class, 'cierresDiarios']);
+    });
+
+    // Contabilidad (doble entrada)
+    Route::prefix('contabilidad')->group(function () {
+        Route::get('tendencia',            [ContabilidadController::class, 'tendencia']);
+        Route::get('comparativa',          [ContabilidadController::class, 'comparativa']);
+        Route::get('pyg',                  [ContabilidadController::class, 'pyg']);
+        Route::get('balance-general',      [ContabilidadController::class, 'balanceGeneral']);
+        Route::get('asientos',             [ContabilidadController::class, 'asientos']);
+        Route::get('cierres-pendientes',   [ContabilidadController::class, 'cierresPendientes']);
+        Route::post('ejecutar-cierre',     [ContabilidadController::class, 'ejecutarCierre']);
     });
 });

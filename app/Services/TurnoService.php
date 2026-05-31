@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CierreDiario;
 use App\Models\CorteCaja;
 use App\Models\Turno;
+use App\Services\ContabilidadService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -143,6 +144,15 @@ class TurnoService
 
         // Vincular turno al cierre
         $turno->update(['cierre_diario_id' => $cierre->id]);
+
+        // Generar asiento de cierre contable si el cierre tiene datos
+        if ($totalVentas > 0 || $totalGastos > 0) {
+            try {
+                app(ContabilidadService::class)->ejecutarCierreDiario($cierre);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
     }
 
     private function generarCodigo(): string

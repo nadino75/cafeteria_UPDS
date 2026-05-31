@@ -186,7 +186,121 @@
       </div>
     </div>
 
-    <!-- ════════════════ 5. Cierres Diarios ════════════════ -->
+    <!-- ════════════════ 5. PyG (Pérdidas y Ganancias) ════════════════ -->
+    <div v-if="tabActivo === 'piy-g'" class="space-y-4">
+      <div class="flex items-center gap-3">
+        <div>
+          <label class="block text-ink-mute text-xs mb-1">Desde</label>
+          <input v-model="pygDesde" type="date"
+            class="bg-elevated border border-edge rounded-lg px-4 py-2 text-ink text-sm focus:outline-none focus:border-amber" />
+        </div>
+        <div>
+          <label class="block text-ink-mute text-xs mb-1">Hasta</label>
+          <input v-model="pygHasta" type="date"
+            class="bg-elevated border border-edge rounded-lg px-4 py-2 text-ink text-sm focus:outline-none focus:border-amber" />
+        </div>
+        <button @click="cargarPyG" :disabled="cargandoPyG"
+          class="mt-4 px-4 py-2 bg-amber hover:bg-amber-bright text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
+          {{ cargandoPyG ? 'Cargando...' : 'Consultar' }}
+        </button>
+        <button v-if="pygData" @click="imprimir" class="mt-4 px-4 py-2 border border-edge hover:bg-elevated text-sm font-medium rounded-lg transition-colors">
+          Imprimir
+        </button>
+      </div>
+
+      <div v-if="pygData" id="pyg-print" class="space-y-4">
+        <!-- Resumen ejecutivo -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <StatCard label="Ingresos Netos" :value="`Bs. ${Number(pygData.ingresos.total_ingresos ?? 0).toFixed(2)}`" variante="ok" />
+          <StatCard label="CMV" :value="`Bs. ${Number(pygData.costos.costo_ventas ?? 0).toFixed(2)}`" variante="err" />
+          <StatCard label="Utilidad Bruta" :value="`Bs. ${Number(pygData.costos.utilidad_bruta ?? 0).toFixed(2)}`"
+            :variante="(pygData.costos.utilidad_bruta ?? 0) >= 0 ? 'ok' : 'err'" />
+          <StatCard label="Margen Bruto" :value="`${pygData.costos.margen_bruto_pct ?? 0}%`" variante="neutral" />
+        </div>
+
+        <!-- Estado de Resultados detallado -->
+        <div class="bg-card border border-edge rounded-xl p-5 print:shadow-none">
+          <div class="flex items-center justify-between mb-4 border-b border-edge pb-3">
+            <h3 class="font-display text-lg text-ink font-medium">Estado de Resultados</h3>
+            <span class="text-xs text-ink-mute">{{ pygData.periodo.desde }} → {{ pygData.periodo.hasta }}</span>
+          </div>
+
+          <div class="space-y-2 max-w-lg">
+            <!-- Ingresos -->
+            <div class="flex justify-between py-1">
+              <span class="text-ink font-medium">Ingresos por Ventas</span>
+              <span class="font-mono text-ok">Bs. {{ Number(pygData.ingresos.ventas).toFixed(2) }}</span>
+            </div>
+
+            <div class="border-t border-dashed border-edge/50 pt-2">
+              <div class="flex justify-between py-1">
+                <span class="text-ink font-medium">Costo de Mercancía Vendida</span>
+                <span class="font-mono text-err">Bs. {{ Number(pygData.costos.costo_ventas).toFixed(2) }}</span>
+              </div>
+            </div>
+
+            <!-- Utilidad Bruta -->
+            <div class="flex justify-between py-2 border-t border-edge font-medium">
+              <span class="text-ink">Utilidad Bruta</span>
+              <span class="font-mono" :class="(pygData.costos.utilidad_bruta ?? 0) >= 0 ? 'text-ok' : 'text-err'">
+                Bs. {{ Number(pygData.costos.utilidad_bruta).toFixed(2) }}
+              </span>
+            </div>
+
+            <!-- Gastos -->
+            <div class="border-t border-dashed border-edge/50 pt-2">
+              <span class="text-ink-mute text-xs uppercase tracking-wider">Gastos Operativos</span>
+              <div v-for="(total, cat) in pygData.gastos.detalle" :key="cat"
+                class="flex justify-between py-1 ml-4">
+                <span class="text-ink-mute text-sm capitalize">{{ cat }}</span>
+                <span class="font-mono text-warn text-sm">Bs. {{ Number(total).toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between py-1 ml-4 font-medium border-t border-edge/50">
+                <span class="text-ink-mute">Total Gastos</span>
+                <span class="font-mono text-warn">Bs. {{ Number(pygData.gastos.total_gastos).toFixed(2) }}</span>
+              </div>
+            </div>
+
+            <!-- Resultado Neto -->
+            <div class="flex justify-between py-3 border-t-2 border-edge text-base font-semibold">
+              <span class="text-ink">Resultado Neto</span>
+              <span class="font-mono text-lg" :class="(pygData.resultado.utilidad_neta ?? 0) >= 0 ? 'text-ok' : 'text-err'">
+                Bs. {{ Number(pygData.resultado.utilidad_neta).toFixed(2) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Indicadores clave -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-4 border-t border-edge">
+            <div>
+              <span class="text-ink-mute text-xs">Margen Neto</span>
+              <p class="font-mono text-lg" :class="(pygData.resultado.margen_neto_pct ?? 0) >= 0 ? 'text-ok' : 'text-err'">
+                {{ pygData.resultado.margen_neto_pct }}%
+              </p>
+            </div>
+            <div>
+              <span class="text-ink-mute text-xs">Transacciones</span>
+              <p class="font-mono text-lg text-ink">{{ pygData.num_ventas }}</p>
+            </div>
+            <div>
+              <span class="text-ink-mute text-xs">Ticket Promedio</span>
+              <p class="font-mono text-lg text-ink">Bs. {{ Number(pygData.ticket_promedio).toFixed(2) }}</p>
+            </div>
+            <div>
+              <span class="text-ink-mute text-xs">Relación Gasto/Ingreso</span>
+              <p class="font-mono text-lg text-warn">
+                {{ pygData.ingresos.total_ingresos > 0
+                  ? (pygData.gastos.total_gastos / pygData.ingresos.total_ingresos * 100).toFixed(1)
+                  : 0 }}%
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p v-else-if="pygCargado" class="text-ink-mute text-sm italic">Sin datos para el período</p>
+    </div>
+
+    <!-- ════════════════ 6. Cierres Diarios ════════════════ -->
     <div v-if="tabActivo === 'cierres-diarios'" class="space-y-4">
       <div class="flex items-center gap-3">
         <select v-model.number="cdMes"
@@ -255,6 +369,7 @@ const TABS = [
   { key: 'productos-vendidos', label: 'Productos Vendidos' },
   { key: 'balance-diario',     label: 'Balance Diario' },
   { key: 'resumen-mensual',    label: 'Resumen Mensual' },
+  { key: 'piy-g',              label: 'PyG' },
   { key: 'cierres-diarios',    label: 'Cierres Diarios' },
 ]
 
@@ -330,6 +445,26 @@ async function cargarResumenMensual() {
     rmData.value = data.data
   } catch { rmData.value = null }
   finally { cargandoRM.value = false }
+}
+
+// ── PyG (Pérdidas y Ganancias) ──────────────────────────────────────────────
+const pygDesde = ref(inicioMes)
+const pygHasta = ref(new Date().toISOString().slice(0, 10))
+const pygData = ref(null)
+const pygCargado = ref(false)
+const cargandoPyG = ref(false)
+
+async function cargarPyG() {
+  cargandoPyG.value = true; pygCargado.value = false
+  try {
+    const { data } = await client.get('/contabilidad/pyg', { params: { desde: pygDesde.value, hasta: pygHasta.value } })
+    pygData.value = data.data
+  } catch { pygData.value = null }
+  finally { pygCargado.value = true; cargandoPyG.value = false }
+}
+
+function imprimir() {
+  window.print()
 }
 
 // ── Cierres Diarios ─────────────────────────────────────────────────────────

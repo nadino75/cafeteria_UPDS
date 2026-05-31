@@ -13,7 +13,12 @@ use Illuminate\Support\Facades\DB;
 
 class VentaService
 {
-    public function __construct(private FifoService $fifo) {}
+    public function __construct(
+        private FifoService $fifo,
+        private ?ContabilidadService $contabilidad = null
+    ) {
+        $this->contabilidad ??= app(ContabilidadService::class);
+    }
 
     /**
      * Registra una venta completa con descuento FIFO.
@@ -123,6 +128,13 @@ class VentaService
             // Sumar puntos al cliente (1 punto por cada unidad monetaria)
             if ($clienteId) {
                 Cliente::find($clienteId)?->increment('puntos_acumulados', (int) $total);
+            }
+
+            // Generar asiento contable
+            try {
+                $this->contabilidad->generarAsientoVenta($venta);
+            } catch (\Throwable $e) {
+                report($e);
             }
 
             return $venta->load('detalles');

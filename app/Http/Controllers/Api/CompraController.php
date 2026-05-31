@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Compra;
 use App\Models\DetalleCompra;
 use App\Models\Producto;
+use App\Services\ContabilidadService;
 use App\Services\FifoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -144,6 +145,15 @@ class CompraController extends Controller
                 'estado'          => $todoRecibido ? 'recibida' : 'parcial',
                 'fecha_recepcion' => now(),
             ]);
+
+            // Generar asiento contable cuando se recibe completamente
+            if ($todoRecibido) {
+                try {
+                    app(ContabilidadService::class)->generarAsientoCompra($compra->fresh());
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
         });
 
         return response()->json([

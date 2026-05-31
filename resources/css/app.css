@@ -52,3 +52,22 @@ body {
 ::-webkit-scrollbar-track { background: var(--color-base); }
 ::-webkit-scrollbar-thumb { background: var(--color-edge-lit); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-ink-dim); }
+
+/* ===== Print ===== */
+@media print {
+  .AppSidebar, .AppHeader, .sidebar, header, .sidebar-header,
+  nav, button, input, select, option,
+  .no-print { display: none !important; }
+  body { background: white !important; color: black !important; }
+  .bg-card, .bg-surface, .bg-elevated { background: white !important; border-color: #ddd !important; }
+  .text-ink, .text-ink-mute, .text-ink-dim { color: #222 !important; }
+  .text-ok { color: #15803d !important; }
+  .text-err { color: #dc2626 !important; }
+  .text-warn { color: #a16207 !important; }
+  .border-edge, .border-b { border-color: #ddd !important; }
+  .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+  main { margin-left: 0 !important; padding: 0 !important; }
+  .min-h-screen { min-height: auto !important; }
+  .space-y-6 > * { margin-top: 0 !important; }
+  *, *::before, *::after { break-inside: avoid; }
+}
