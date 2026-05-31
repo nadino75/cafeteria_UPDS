@@ -284,8 +284,12 @@ async function guardar() {
     const config  = hasFile ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
 
     if (modoEdicion.value) {
-      if (hasFile) payload.append('_method', 'PUT')
-      await client.post(`/menus/${form.value._id}`, payload, config)
+      if (hasFile) {
+        payload.append('_method', 'PUT')
+        await client.post(`/menus/${form.value._id}`, payload, config)
+      } else {
+        await client.put(`/menus/${form.value._id}`, payload, config)
+      }
     } else {
       await client.post('/menus', payload, config)
     }
