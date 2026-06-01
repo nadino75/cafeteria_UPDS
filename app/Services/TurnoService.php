@@ -43,9 +43,11 @@ class TurnoService
 
         return DB::transaction(function () use ($turno, $datosCorte, $usuarioId) {
             // Calcular totales del turno
-            $totalVentas = $turno->ventas()
-                ->where('estado', 'completada')
-                ->sum('total');
+            $ventasCompletadas = $turno->ventas()->where('estado', 'completada');
+
+            $totalVentas = (clone $ventasCompletadas)->sum('total');
+
+            $efectivoEsperado = (clone $ventasCompletadas)->sum('pago_efectivo');
 
             $totalGastos = $turno->gastos()->sum('monto');
 
@@ -65,6 +67,7 @@ class TurnoService
             $corte = CorteCaja::create([
                 'turno_id'              => $turno->id,
                 'usuario_id'            => $usuarioId,
+                'efectivo_esperado'     => $efectivoEsperado,
                 'billetes_200'          => $datosCorte['billetes_200'] ?? 0,
                 'billetes_100'          => $datosCorte['billetes_100'] ?? 0,
                 'billetes_50'           => $datosCorte['billetes_50']  ?? 0,
@@ -106,6 +109,7 @@ class TurnoService
         $totalVentasEfectivo   = 0;
         $totalVentasTarjeta    = 0;
         $totalVentasTransfer   = 0;
+        $totalVentasQr         = 0;
         $totalDescuentos       = 0;
         $totalImpuestos        = 0;
         $numVentas             = 0;
@@ -121,6 +125,7 @@ class TurnoService
                     'efectivo'     => $totalVentasEfectivo += $venta->total,
                     'tarjeta'      => $totalVentasTarjeta  += $venta->total,
                     'transferencia'=> $totalVentasTransfer += $venta->total,
+                    'qr'           => $totalVentasQr       += $venta->total,
                     default        => null,
                 };
             }
@@ -135,6 +140,7 @@ class TurnoService
             'total_ventas_efectivo'      => $totalVentasEfectivo,
             'total_ventas_tarjeta'       => $totalVentasTarjeta,
             'total_ventas_transferencia' => $totalVentasTransfer,
+            'total_ventas_qr'            => $totalVentasQr,
             'total_descuentos'           => $totalDescuentos,
             'total_impuestos'            => $totalImpuestos,
             'total_gastos_operativos'    => $totalGastos,

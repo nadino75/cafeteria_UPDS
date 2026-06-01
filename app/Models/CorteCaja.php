@@ -18,9 +18,13 @@ class CorteCaja extends Model
         'billetes_10',
         'monedas_total',
         'total_efectivo_contado',
+        'efectivo_esperado',
         'total_tarjeta',
         'total_transferencia',
         'total_real',
+        'estado',
+        'validado_por',
+        'fecha_validacion',
         'observaciones',
     ];
 
@@ -30,9 +34,11 @@ class CorteCaja extends Model
         'fecha_corte'           => 'datetime',
         'monedas_total'         => 'decimal:2',
         'total_efectivo_contado'=> 'decimal:2',
+        'efectivo_esperado'     => 'decimal:2',
         'total_tarjeta'         => 'decimal:2',
         'total_transferencia'   => 'decimal:2',
         'total_real'            => 'decimal:2',
+        'fecha_validacion'      => 'datetime',
     ];
 
     public function turno()
@@ -43,5 +49,10 @@ class CorteCaja extends Model
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'usuario_id');
+    }
+
+    public function validador()
+    {
+        return $this->belongsTo(Usuario::class, 'validado_por');
     }
 }

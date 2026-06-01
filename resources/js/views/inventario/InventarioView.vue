@@ -118,6 +118,7 @@
           class="w-full sm:w-40 bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber">
           <option value="">Todos los tipos</option>
           <option value="entrada">Entrada</option>
+          <option value="salida">Salida</option>
           <option value="ajuste">Ajuste</option>
           <option value="merma">Merma</option>
           <option value="devolucion">Devolución</option>

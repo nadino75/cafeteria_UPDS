@@ -70,12 +70,16 @@ Route::middleware('jwt.auth')->group(function () {
 
     // Turnos
     Route::prefix('turnos')->group(function () {
-        Route::get('/',          [TurnoController::class, 'index']);
-        Route::get('activo',     [TurnoController::class, 'miTurnoActivo']);
-        Route::get('{turno}',    [TurnoController::class, 'show']);
-        Route::post('abrir',     [TurnoController::class, 'abrir']);
-        Route::post('{turno}/cerrar', [TurnoController::class, 'cerrar']);
+        Route::get('/',                       [TurnoController::class, 'index']);
+        Route::get('activo',                  [TurnoController::class, 'miTurnoActivo']);
+        Route::get('pendientes-validar',      [TurnoController::class, 'pendientesValidar']);
+        Route::get('{turno}',                 [TurnoController::class, 'show']);
+        Route::get('{turno}/resumen-cierre',  [TurnoController::class, 'resumenCierre']);
+        Route::post('abrir',                  [TurnoController::class, 'abrir']);
+        Route::post('{turno}/cerrar',         [TurnoController::class, 'cerrar']);
     });
+
+    Route::post('cortes/{corte}/validar-entrega', [TurnoController::class, 'validarEntrega']);
 
     // Ventas
     Route::prefix('ventas')->group(function () {

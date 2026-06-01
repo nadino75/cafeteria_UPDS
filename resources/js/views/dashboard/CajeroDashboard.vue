@@ -56,6 +56,7 @@
             <option value="efectivo">Efectivo</option>
             <option value="tarjeta">Tarjeta</option>
             <option value="transferencia">Transferencia</option>
+            <option value="qr">QR</option>
             <option value="mixto">Mixto</option>
           </select>
           <button @click="modalCerrarTurno = true"
@@ -173,6 +174,46 @@
               <span class="text-ink font-medium">Total</span>
               <span class="font-mono text-amber text-xl font-bold">Bs. {{ totalNuevaVenta }}</span>
             </div>
+
+            <!-- Efectivo -->
+            <template v-if="nuevaVenta.metodo_pago === 'efectivo'">
+              <div>
+                <label class="text-ink-dim text-xs font-medium uppercase tracking-wider">Monto recibido</label>
+                <input v-model.number="pagoEfectivo" type="number" min="0" step="0.01" placeholder="0.00"
+                  class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber mt-1" />
+              </div>
+              <div v-if="pagoEfectivo >= Number(totalNuevaVenta)" class="flex justify-between items-center pt-1">
+                <span class="text-ink-dim text-xs">Vuelto</span>
+                <span class="font-mono text-ok text-sm font-medium">Bs. {{ vuelto.toFixed(2) }}</span>
+              </div>
+              <p v-if="pagoEfectivo > 0 && pagoEfectivo < Number(totalNuevaVenta)" class="text-err text-xs">El monto recibido no cubre el total</p>
+            </template>
+
+            <!-- Tarjeta / Transferencia / QR -->
+            <template v-if="nuevaVenta.metodo_pago === 'tarjeta' || nuevaVenta.metodo_pago === 'transferencia' || nuevaVenta.metodo_pago === 'qr'">
+              <p class="text-ink-dim text-xs">Total a cobrar: <span class="font-mono text-ink font-medium">Bs. {{ totalNuevaVenta }}</span></p>
+            </template>
+
+            <!-- Mixto -->
+            <template v-if="nuevaVenta.metodo_pago === 'mixto'">
+              <div>
+                <label class="text-ink-dim text-xs font-medium uppercase tracking-wider">Efectivo</label>
+                <input v-model.number="pagoEfectivo" type="number" min="0" step="0.01" placeholder="0.00"
+                  class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber mt-1" />
+              </div>
+              <div>
+                <label class="text-ink-dim text-xs font-medium uppercase tracking-wider">Tarjeta</label>
+                <input v-model.number="pagoTarjeta" type="number" min="0" step="0.01" placeholder="0.00"
+                  class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber mt-1" />
+              </div>
+              <div v-if="(pagoEfectivo || 0) + (pagoTarjeta || 0) >= Number(totalNuevaVenta)" class="flex justify-between items-center pt-1">
+                <span class="text-ink-dim text-xs">Vuelto</span>
+                <span class="font-mono text-ok text-sm font-medium">Bs. {{ vuelto.toFixed(2) }}</span>
+              </div>
+              <p v-if="(pagoEfectivo || 0) + (pagoTarjeta || 0) > 0 && (pagoEfectivo || 0) + (pagoTarjeta || 0) < Number(totalNuevaVenta)" class="text-err text-xs">La suma de los pagos no cubre el total</p>
+            </template>
+
+            <p v-if="errorPago" class="text-err text-xs">{{ errorPago }}</p>
             <p v-if="errorModal" class="text-err text-xs">{{ errorModal }}</p>
             <button @click="confirmarVenta" :disabled="loadingModal || nuevaVenta.items.length === 0"
               class="w-full py-3 bg-amber hover:bg-amber-bright text-base font-medium rounded-lg text-sm disabled:opacity-50 transition-colors">
@@ -221,25 +262,86 @@
 
     <!-- Modal: Cerrar turno -->
     <Teleport to="body">
-      <div v-if="modalCerrarTurno" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-card border border-edge rounded-2xl w-full max-w-md p-6 overflow-y-auto max-h-[90vh]">
+      <div v-if="modalCerrarTurno" class="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-4 pt-8 overflow-y-auto">
+        <div class="bg-card border border-edge rounded-2xl w-full max-w-lg p-6 my-4">
           <h3 class="font-display text-xl text-ink font-medium mb-4">Cerrar turno</h3>
-          <p class="text-ink-mute text-sm mb-4">Ingresa el conteo físico de caja.</p>
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div v-for="campo in camposCorte" :key="campo.key">
+          <p class="text-ink-dim text-xs mb-4">{{ turnoActivo?.codigo }}</p>
+
+          <div v-if="cargandoResumenCorte" class="text-ink-dim text-sm text-center py-8">Calculando...</div>
+
+          <template v-if="!cargandoResumenCorte">
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div>
+                <label class="block text-ink-dim text-xs mb-1">Efectivo esperado</label>
+                <input :value="resumenCorte.efectivo_esperado?.toFixed(2)" readonly
+                  class="w-full bg-elevated/50 border border-edge rounded-lg px-3 py-2 text-ink-dim text-sm" />
+              </div>
+              <div>
+                <label class="block text-ink-dim text-xs mb-1">Efectivo contado (entregado)</label>
+                <input v-model.number="corte.total_efectivo_contado" type="number" min="0" step="0.01"
+                  class="w-full bg-elevated border border-edge rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-amber"
+                  :class="{ 'border-err/50': resumenCorte.efectivo_esperado && Number(corte.total_efectivo_contado) !== resumenCorte.efectivo_esperado }" />
+                <p v-if="resumenCorte.efectivo_esperado && Number(corte.total_efectivo_contado) !== resumenCorte.efectivo_esperado"
+                  class="text-err text-xs mt-1">Dif: Bs. {{ (Number(corte.total_efectivo_contado) - resumenCorte.efectivo_esperado).toFixed(2) }}</p>
+              </div>
+              <div>
+                <label class="block text-ink-dim text-xs mb-1">Tarjeta esperado</label>
+                <input :value="resumenCorte.tarjeta_esperado?.toFixed(2)" readonly
+                  class="w-full bg-elevated/50 border border-edge rounded-lg px-3 py-2 text-ink-dim text-sm" />
+              </div>
+              <div>
+                <label class="block text-ink-dim text-xs mb-1">Tarjeta contado</label>
+                <input v-model.number="corte.total_tarjeta" type="number" min="0" step="0.01"
+                  class="w-full bg-elevated border border-edge rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-amber" />
+              </div>
+              <div>
+                <label class="block text-ink-dim text-xs mb-1">Transferencia esperado</label>
+                <input :value="resumenCorte.transferencia_esperado?.toFixed(2)" readonly
+                  class="w-full bg-elevated/50 border border-edge rounded-lg px-3 py-2 text-ink-dim text-sm" />
+              </div>
+              <div>
+                <label class="block text-ink-dim text-xs mb-1">Transferencia contado</label>
+                <input v-model.number="corte.total_transferencia" type="number" min="0" step="0.01"
+                  class="w-full bg-elevated border border-edge rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-amber" />
+              </div>
+              <div>
+                <label class="block text-ink-dim text-xs mb-1">QR esperado</label>
+                <input :value="resumenCorte.qr_esperado?.toFixed(2)" readonly
+                  class="w-full bg-elevated/50 border border-edge rounded-lg px-3 py-2 text-ink-dim text-sm" />
+              </div>
+              <div>
+                <label class="block text-ink-dim text-xs mb-1">Total real</label>
+                <input v-model.number="corte.total_real" type="number" min="0" step="0.01"
+                  class="w-full bg-elevated border border-edge rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-amber" />
+              </div>
+            </div>
+
+            <div class="bg-elevated/50 rounded-lg p-3 mb-4 text-sm">
+              <div class="flex justify-between">
+                <span class="text-ink-dim">Caja final esperada:</span>
+                <span class="font-mono text-ink font-medium">Bs. {{ resumenCorte.caja_final_esperada?.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-ink-dim">Total ventas:</span>
+                <span class="font-mono text-ink">Bs. {{ resumenCorte.total_ventas?.toFixed(2) }}</span>
+              </div>
+            </div>
+
+            <div v-for="campo in camposCorte" :key="campo.key" class="mb-2">
               <label class="block text-ink-dim text-xs mb-1">{{ campo.label }}</label>
               <input v-model.number="corte[campo.key]" type="number" min="0"
                 class="w-full bg-elevated border border-edge rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-amber" />
             </div>
-          </div>
-          <label class="block text-ink-mute text-sm mb-1.5">Observaciones</label>
+          </template>
+
+          <label class="block text-ink-mute text-sm mb-1.5 mt-3">Observaciones</label>
           <textarea v-model="corte.observaciones" rows="2" placeholder="Opcional..."
             class="w-full bg-elevated border border-edge rounded-lg px-4 py-3 text-ink text-sm focus:outline-none focus:border-amber resize-none mb-4" />
           <p v-if="errorModal" class="text-err text-sm mb-3">{{ errorModal }}</p>
           <div class="flex gap-3">
             <button @click="modalCerrarTurno = false; errorModal = null"
               class="flex-1 border border-edge text-ink-mute py-2.5 rounded-lg text-sm hover:text-ink transition-colors">Cancelar</button>
-            <button @click="cerrarTurno" :disabled="loadingModal"
+            <button @click="cerrarTurnoFn" :disabled="loadingModal || cargandoResumenCorte"
               class="flex-1 bg-err hover:bg-err/80 text-white font-medium py-2.5 rounded-lg text-sm disabled:opacity-50 transition-colors">
               {{ loadingModal ? 'Cerrando...' : 'Cerrar turno' }}
             </button>
@@ -252,7 +354,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import client from '@/api/client.js'
 import AlertBadge from '@/components/AlertBadge.vue'
 import MenuCard from '@/components/MenuCard.vue'
@@ -267,6 +369,21 @@ const modalCerrarTurno = ref(false)
 const verVentas      = ref(false)
 const busquedaMenu   = ref('')
 const cajaInicial    = ref(0)
+const pagoEfectivo   = ref(0)
+const pagoTarjeta    = ref(0)
+const pagoTransferencia = ref(0)
+const errorPago      = ref(null)
+
+const vuelto = computed(() => {
+  const total = Number(totalNuevaVenta.value)
+  const metodo = nuevaVenta.metodo_pago
+  if (metodo === 'efectivo') return Math.max(0, pagoEfectivo.value - total)
+  if (metodo === 'mixto') {
+    const falta = total - (pagoTarjeta.value || 0)
+    return Math.max(0, (pagoEfectivo.value || 0) - falta)
+  }
+  return 0
+})
 
 const menusFiltrados = computed(() => {
   const q = busquedaMenu.value.toLowerCase().trim()
@@ -276,16 +393,18 @@ const menusFiltrados = computed(() => {
 
 const totalVentasHoy = computed(() => ventasTurno.value.filter(v => v.estado === 'completada').length)
 
+const cargandoResumenCorte = ref(false)
+const resumenCorte = ref({
+  efectivo_esperado: 0, tarjeta_esperado: 0, transferencia_esperado: 0,
+  qr_esperado: 0, total_ventas: 0, total_gastos: 0, caja_final_esperada: 0,
+})
+
 const corte = reactive({
   total_efectivo_contado: 0, total_real: 0, total_tarjeta: 0, total_transferencia: 0,
   billetes_200: 0, billetes_100: 0, billetes_50: 0, billetes_20: 0, billetes_10: 0,
   monedas_total: 0, observaciones: '',
 })
 const camposCorte = [
-  { key: 'total_efectivo_contado', label: 'Efectivo contado (Bs.)' },
-  { key: 'total_real',             label: 'Total real (Bs.)' },
-  { key: 'total_tarjeta',          label: 'Tarjeta (Bs.)' },
-  { key: 'total_transferencia',    label: 'Transferencia (Bs.)' },
   { key: 'billetes_200', label: 'Billetes Bs. 200' },
   { key: 'billetes_100', label: 'Billetes Bs. 100' },
   { key: 'billetes_50',  label: 'Billetes Bs. 50' },
@@ -368,6 +487,10 @@ async function crearCliente() {
   } finally { guardandoCliente.value = false }
 }
 
+watch(() => nuevaVenta.metodo_pago, () => {
+  pagoEfectivo.value = 0; pagoTarjeta.value = 0; pagoTransferencia.value = 0; errorPago.value = null
+})
+
 onMounted(() => Promise.all([cargarTurnoActivo(), cargarMenus()]))
 
 async function cargarTurnoActivo() {
@@ -406,7 +529,29 @@ async function abrirTurno() {
   finally { loadingModal.value = false }
 }
 
-async function cerrarTurno() {
+watch(modalCerrarTurno, async (abierto) => {
+  if (!abierto || !turnoActivo.value) return
+  cargandoResumenCorte.value = true
+  corte.total_efectivo_contado = 0
+  corte.total_real = 0
+  corte.total_tarjeta = 0
+  corte.total_transferencia = 0
+  corte.billetes_200 = 0; corte.billetes_100 = 0; corte.billetes_50 = 0
+  corte.billetes_20 = 0; corte.billetes_10 = 0; corte.monedas_total = 0
+  corte.observaciones = ''
+  try {
+    const { data } = await client.get(`/turnos/${turnoActivo.value.id}/resumen-cierre`)
+    resumenCorte.value = data.data ?? resumenCorte.value
+    corte.total_efectivo_contado = resumenCorte.value.efectivo_esperado
+    corte.total_tarjeta = resumenCorte.value.tarjeta_esperado
+    corte.total_transferencia = resumenCorte.value.transferencia_esperado
+    corte.total_real = resumenCorte.value.caja_final_esperada
+  } catch {
+    resumenCorte.value = { efectivo_esperado: 0, tarjeta_esperado: 0, transferencia_esperado: 0, qr_esperado: 0, total_ventas: 0, total_gastos: 0, caja_final_esperada: 0 }
+  } finally { cargandoResumenCorte.value = false }
+})
+
+async function cerrarTurnoFn() {
   if (!turnoActivo.value) return
   loadingModal.value = true; errorModal.value = null
   try {
@@ -417,16 +562,38 @@ async function cerrarTurno() {
 }
 
 async function confirmarVenta() {
-  loadingModal.value = true; errorModal.value = null
+  loadingModal.value = true; errorModal.value = null; errorPago.value = null
+  const total = Number(totalNuevaVenta.value)
+  const metodo = nuevaVenta.metodo_pago
+
+  if (metodo === 'efectivo' && pagoEfectivo.value < total) {
+    errorPago.value = 'El monto recibido es menor al total'
+    loadingModal.value = false; return
+  }
+  if (metodo === 'mixto') {
+    const suma = (pagoEfectivo.value || 0) + (pagoTarjeta.value || 0)
+    if (suma < total) {
+      errorPago.value = 'La suma de los pagos no cubre el total'
+      loadingModal.value = false; return
+    }
+  }
+
   try {
     await client.post('/ventas', {
-      turno_id:    turnoActivo.value.id,
-      metodo_pago: nuevaVenta.metodo_pago,
-      cliente_id:  clienteSeleccionado.value?.id ?? null,
-      items:       nuevaVenta.items.map(i => ({ tipo: i.tipo, id: i.id, cantidad: i.cantidad, precio_unitario: i.precio_unitario })),
+      turno_id:         turnoActivo.value.id,
+      metodo_pago:      nuevaVenta.metodo_pago,
+      cliente_id:       clienteSeleccionado.value?.id ?? null,
+      items:            nuevaVenta.items.map(i => ({ tipo: i.tipo, id: i.id, cantidad: i.cantidad, precio_unitario: i.precio_unitario })),
+      pago_efectivo:    metodo === 'efectivo' || metodo === 'mixto' ? pagoEfectivo.value || null : null,
+      pago_tarjeta:     metodo === 'tarjeta' || metodo === 'mixto' ? (metodo === 'tarjeta' ? total : pagoTarjeta.value || null) : null,
+      pago_transferencia: metodo === 'transferencia' ? total : null,
+      pago_qr:          metodo === 'qr' ? total : null,
     })
     nuevaVenta.items = []
     clienteSeleccionado.value = null
+    pagoEfectivo.value = 0
+    pagoTarjeta.value = 0
+    pagoTransferencia.value = 0
     await cargarVentasTurno()
   } catch (e) { errorModal.value = e.response?.data?.message ?? 'Error al registrar la venta.' }
   finally { loadingModal.value = false }

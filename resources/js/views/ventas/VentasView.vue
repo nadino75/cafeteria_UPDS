@@ -111,6 +111,7 @@
                 <option value="efectivo">Efectivo</option>
                 <option value="tarjeta">Tarjeta</option>
                 <option value="transferencia">Transferencia</option>
+                <option value="qr">QR</option>
                 <option value="mixto">Mixto</option>
               </select>
             </div>

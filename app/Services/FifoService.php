@@ -35,6 +35,13 @@ class FifoService
             ->lockForUpdate()
             ->get();
 
+        $totalDisponible = $lotes->sum('cantidad_disponible');
+        if ($totalDisponible < $cantidad) {
+            throw new \RuntimeException(
+                "Stock insuficiente para '{$producto->nombre}'. Disponible: {$totalDisponible}, solicitado: {$cantidad}."
+            );
+        }
+
         foreach ($lotes as $lote) {
             if ($restante <= 0) {
                 break;

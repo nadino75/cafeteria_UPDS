@@ -136,6 +136,50 @@
 
     </div>
 
+    <!-- Validaciones pendientes -->
+    <div class="bg-card border border-edge rounded-xl">
+      <div class="flex items-center justify-between p-5 border-b border-edge">
+        <h2 class="font-display text-lg text-ink font-medium">Validaciones pendientes</h2>
+        <span v-if="pendientes.length > 0" class="text-xs text-err font-medium">{{ pendientes.length }} pendiente(s)</span>
+      </div>
+      <div v-if="cargandoPendientes" class="px-5 py-8 text-center text-ink-mute text-sm">Cargando...</div>
+      <div v-else-if="pendientes.length === 0" class="px-5 py-8 text-center text-ink-mute text-sm">Sin validaciones pendientes</div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-ink-dim text-xs uppercase tracking-wider">
+              <th class="text-left px-5 py-3">Turno</th>
+              <th class="text-left px-5 py-3">Cajero</th>
+              <th class="text-right px-5 py-3">Esperado</th>
+              <th class="text-right px-5 py-3">Entregado</th>
+              <th class="text-right px-5 py-3">Diferencia</th>
+              <th class="text-center px-5 py-3">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="p in pendientes" :key="p.id" class="border-t border-edge hover:bg-elevated/30 transition-colors">
+              <td class="px-5 py-3 font-mono text-ink text-xs">{{ p.turno?.codigo || '—' }}</td>
+              <td class="px-5 py-3 text-ink-dim text-xs">{{ p.turno?.usuarioApertura?.nombre_completo || '—' }}</td>
+              <td class="px-5 py-3 text-right font-mono text-ink-dim text-xs">Bs. {{ Number(p.efectivo_esperado).toFixed(2) }}</td>
+              <td class="px-5 py-3 text-right font-mono text-ink text-xs">Bs. {{ Number(p.total_efectivo_contado).toFixed(2) }}</td>
+              <td class="px-5 py-3 text-right">
+                <span class="font-mono text-xs"
+                  :class="(Number(p.total_efectivo_contado) - Number(p.efectivo_esperado)) === 0 ? 'text-ok' : 'text-err'">
+                  {{ (Number(p.total_efectivo_contado) - Number(p.efectivo_esperado)).toFixed(2) }}
+                </span>
+              </td>
+              <td class="px-5 py-3 text-center">
+                <button @click="marcarEntregado(p)" :disabled="p.validando"
+                  class="px-3 py-1.5 bg-ok hover:bg-ok/80 text-white text-xs font-medium rounded-lg disabled:opacity-50 transition-colors">
+                  {{ p.validando ? '...' : 'Marcar como entregado' }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Últimas ventas del día -->
     <div class="bg-card border border-edge rounded-xl">
       <div class="flex items-center justify-between p-5 border-b border-edge">
@@ -192,6 +236,8 @@ const stockCritico  = ref([])
 const turnosAbiertosAnterior = ref([])
 const proveedoresSinCompras  = ref([])
 const discrepanciasCierres   = ref([])
+const pendientes = ref([])
+const cargandoPendientes = ref(false)
 const cargandoGrafico = ref(true)
 
 const sinAlertas = computed(() =>
@@ -223,7 +269,7 @@ function formatFecha(iso) {
   return new Date(iso).toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })
 }
 
-onMounted(() => Promise.all([cargarKpis(), cargarVentas(), cargarGrafico(), cargarAlertas()]))
+onMounted(() => Promise.all([cargarKpis(), cargarVentas(), cargarGrafico(), cargarAlertas(), cargarPendientes()]))
 
 async function cargarKpis() {
   const [rHoy, rAyer, rTurnos, rStock, rUsers] = await Promise.allSettled([
@@ -272,6 +318,25 @@ async function cargarGrafico() {
   } finally {
     cargandoGrafico.value = false
   }
+}
+
+async function cargarPendientes() {
+  cargandoPendientes.value = true
+  try {
+    const { data } = await client.get('/turnos/pendientes-validar')
+    pendientes.value = (data.data ?? []).map(p => ({ ...p, validando: false }))
+  } catch { pendientes.value = [] }
+  finally { cargandoPendientes.value = false }
+}
+
+async function marcarEntregado(corte) {
+  corte.validando = true
+  try {
+    await client.post(`/cortes/${corte.id}/validar-entrega`)
+    pendientes.value = pendientes.value.filter(p => p.id !== corte.id)
+  } catch (e) {
+    alert(e.response?.data?.message || 'Error al validar entrega.')
+  } finally { corte.validando = false }
 }
 
 async function cargarAlertas() {

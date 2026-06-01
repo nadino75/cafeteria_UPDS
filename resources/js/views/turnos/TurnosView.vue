@@ -103,28 +103,71 @@
 
         <div class="space-y-3">
           <h4 class="text-ink-mute text-sm font-medium border-b border-edge pb-1">Resumen de ventas</h4>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-ink-mute text-sm mb-1">Total efectivo contado *</label>
-              <input v-model.number="corte.total_efectivo_contado" type="number" min="0" step="0.01"
-                class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
+
+          <div v-if="cargandoResumen" class="text-ink-dim text-sm text-center py-4">Calculando...</div>
+
+          <template v-if="!cargandoResumen">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-ink-mute text-sm mb-1">Efectivo esperado (sistema)</label>
+                <input :value="resumen.efectivo_esperado" readonly
+                  class="w-full bg-elevated/50 border border-edge rounded-lg px-4 py-2.5 text-ink-dim text-sm" />
+              </div>
+              <div>
+                <label class="block text-ink-mute text-sm mb-1">Efectivo contado (entregado) *</label>
+                <input v-model.number="corte.total_efectivo_contado" type="number" min="0" step="0.01"
+                  class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber"
+                  :class="{ 'border-err/50': resumen.efectivo_esperado && Number(corte.total_efectivo_contado) !== resumen.efectivo_esperado }" />
+                <p v-if="resumen.efectivo_esperado && Number(corte.total_efectivo_contado) !== resumen.efectivo_esperado"
+                  class="text-err text-xs mt-1">Diferencia: Bs. {{ (Number(corte.total_efectivo_contado) - resumen.efectivo_esperado).toFixed(2) }}</p>
+              </div>
+              <div>
+                <label class="block text-ink-mute text-sm mb-1">Tarjeta esperado</label>
+                <input :value="resumen.tarjeta_esperado" readonly
+                  class="w-full bg-elevated/50 border border-edge rounded-lg px-4 py-2.5 text-ink-dim text-sm" />
+              </div>
+              <div>
+                <label class="block text-ink-mute text-sm mb-1">Total tarjeta</label>
+                <input v-model.number="corte.total_tarjeta" type="number" min="0" step="0.01"
+                  class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
+              </div>
+              <div>
+                <label class="block text-ink-mute text-sm mb-1">Transferencia esperado</label>
+                <input :value="resumen.transferencia_esperado" readonly
+                  class="w-full bg-elevated/50 border border-edge rounded-lg px-4 py-2.5 text-ink-dim text-sm" />
+              </div>
+              <div>
+                <label class="block text-ink-mute text-sm mb-1">Total transferencia</label>
+                <input v-model.number="corte.total_transferencia" type="number" min="0" step="0.01"
+                  class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
+              </div>
+              <div>
+                <label class="block text-ink-mute text-sm mb-1">QR esperado</label>
+                <input :value="resumen.qr_esperado" readonly
+                  class="w-full bg-elevated/50 border border-edge rounded-lg px-4 py-2.5 text-ink-dim text-sm" />
+              </div>
+              <div>
+                <label class="block text-ink-mute text-sm mb-1">Total real *</label>
+                <input v-model.number="corte.total_real" type="number" min="0" step="0.01"
+                  class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
+              </div>
             </div>
-            <div>
-              <label class="block text-ink-mute text-sm mb-1">Total real *</label>
-              <input v-model.number="corte.total_real" type="number" min="0" step="0.01"
-                class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
+
+            <div class="bg-elevated/50 rounded-lg p-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-ink-dim">Caja final esperada:</span>
+                <span class="font-mono text-ink font-medium">Bs. {{ resumen.caja_final_esperada?.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-ink-dim">Total ventas:</span>
+                <span class="font-mono text-ink">Bs. {{ resumen.total_ventas?.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between mt-1">
+                <span class="text-ink-dim">Total gastos:</span>
+                <span class="font-mono text-ink">Bs. {{ resumen.total_gastos?.toFixed(2) }}</span>
+              </div>
             </div>
-            <div>
-              <label class="block text-ink-mute text-sm mb-1">Total tarjeta</label>
-              <input v-model.number="corte.total_tarjeta" type="number" min="0" step="0.01"
-                class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
-            </div>
-            <div>
-              <label class="block text-ink-mute text-sm mb-1">Total transferencia</label>
-              <input v-model.number="corte.total_transferencia" type="number" min="0" step="0.01"
-                class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
-            </div>
-          </div>
+          </template>
 
           <h4 class="text-ink-mute text-sm font-medium border-b border-edge pb-1 pt-2">Conteo de billetes</h4>
           <div class="grid grid-cols-5 gap-2">
@@ -171,7 +214,7 @@
         <div class="flex gap-3 mt-5">
           <button @click="cerrarModalCerrar"
             class="flex-1 border border-edge text-ink-mute py-2.5 rounded-lg text-sm hover:text-ink transition-colors">Cancelar</button>
-          <button @click="cerrarTurno" :disabled="cerrando"
+          <button @click="cerrarTurno" :disabled="cerrando || cargandoResumen"
             class="flex-1 bg-amber hover:bg-amber-bright text-base font-medium py-2.5 rounded-lg text-sm disabled:opacity-50 transition-colors">
             {{ cerrando ? 'Cerrando...' : 'Cerrar turno' }}
           </button>
@@ -247,10 +290,15 @@ async function abrirTurno() {
 }
 
 // Cerrar turno
-const modalCerrar = ref(false)
-const cerrando    = ref(false)
-const errorCerrar = ref(null)
-const turnoCerrar = ref(null)
+const modalCerrar    = ref(false)
+const cerrando       = ref(false)
+const errorCerrar    = ref(null)
+const turnoCerrar    = ref(null)
+const cargandoResumen = ref(false)
+const resumen        = ref({
+  efectivo_esperado: 0, tarjeta_esperado: 0, transferencia_esperado: 0,
+  qr_esperado: 0, total_ventas: 0, total_gastos: 0, caja_final_esperada: 0,
+})
 const corte       = ref({
   total_efectivo_contado: null,
   total_real: null,
@@ -265,9 +313,10 @@ const corte       = ref({
   observaciones: '',
 })
 
-function abrirModalCerrar(turno) {
+async function abrirModalCerrar(turno) {
   turnoCerrar.value = turno
   errorCerrar.value = null
+  cargandoResumen.value = true
   corte.value = {
     total_efectivo_contado: null,
     total_real: null,
@@ -282,6 +331,16 @@ function abrirModalCerrar(turno) {
     observaciones: '',
   }
   modalCerrar.value = true
+  try {
+    const { data } = await client.get(`/turnos/${turno.id}/resumen-cierre`)
+    resumen.value = data.data ?? resumen.value
+    corte.value.total_efectivo_contado = resumen.value.efectivo_esperado
+    corte.value.total_tarjeta = resumen.value.tarjeta_esperado
+    corte.value.total_transferencia = resumen.value.transferencia_esperado
+    corte.value.total_real = resumen.value.caja_final_esperada
+  } catch {
+    resumen.value = { efectivo_esperado: 0, tarjeta_esperado: 0, transferencia_esperado: 0, qr_esperado: 0, total_ventas: 0, total_gastos: 0, caja_final_esperada: 0 }
+  } finally { cargandoResumen.value = false }
 }
 
 function cerrarModalCerrar() {

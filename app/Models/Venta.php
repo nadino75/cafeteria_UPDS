@@ -17,6 +17,10 @@ class Venta extends Model
         'impuesto',
         'total',
         'costo_total',
+        'pago_efectivo',
+        'pago_tarjeta',
+        'pago_transferencia',
+        'pago_qr',
         'metodo_pago',
         'estado',
         'nota',
@@ -25,12 +29,16 @@ class Venta extends Model
     public $timestamps = false;
 
     protected $casts = [
-        'fecha'       => 'datetime',
-        'subtotal'    => 'decimal:2',
-        'descuento'   => 'decimal:2',
-        'impuesto'    => 'decimal:2',
-        'total'       => 'decimal:2',
-        'costo_total' => 'decimal:2',
+        'fecha'             => 'datetime',
+        'subtotal'          => 'decimal:2',
+        'descuento'         => 'decimal:2',
+        'impuesto'          => 'decimal:2',
+        'total'             => 'decimal:2',
+        'costo_total'       => 'decimal:2',
+        'pago_efectivo'      => 'decimal:2',
+        'pago_tarjeta'       => 'decimal:2',
+        'pago_transferencia' => 'decimal:2',
+        'pago_qr'            => 'decimal:2',
     ];
 
     public function turno()

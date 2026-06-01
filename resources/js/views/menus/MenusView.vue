@@ -394,7 +394,7 @@ async function guardar() {
 function buildFormData() {
   const fd = new FormData()
   fd.append('imagen', imagenFile.value)
-  ;['nombre', 'descripcion', 'categoria_id', 'precio_venta', 'tipo', 'costo', 'imagen_url',
+  ;['nombre', 'descripcion', 'categoria_id', 'precio_venta', 'tipo', 'costo',
     'disponible_desde', 'disponible_hasta'].forEach(k => {
     if (form.value[k] != null && form.value[k] !== '') fd.append(k, form.value[k])
   })

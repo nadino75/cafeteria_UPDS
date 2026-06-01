@@ -79,27 +79,25 @@ class InventarioController extends Controller
         $producto = Producto::findOrFail($request->producto_id);
 
         DB::transaction(function () use ($request, $producto, $usuario) {
-            if ($request->tipo === 'entrada') {
+            if (in_array($request->tipo, ['entrada', 'devolucion', 'ajuste'])) {
+                // Entrada/suma de stock: crear lote FIFO
                 $this->fifo->registrarEntrada(
                     producto:         $producto,
                     cantidad:         $request->cantidad,
                     costoUnitario:    (float) ($request->costo_unitario ?? $producto->costo_unitario),
                     usuarioId:        $usuario->id,
-                    numeroLote:       $request->numero_lote,
-                    fechaVencimiento: $request->fecha_vencimiento,
+                    numeroLote:       $request->tipo === 'entrada' ? $request->numero_lote : null,
+                    fechaVencimiento: $request->tipo === 'entrada' ? $request->fecha_vencimiento : null,
                 );
             } else {
-                MovimientoInventario::create([
-                    'producto_id'    => $producto->id,
-                    'tipo'           => $request->tipo,
-                    'cantidad'       => $request->cantidad,
-                    'motivo'         => $request->motivo,
-                    'usuario_id'     => $usuario->id,
-                    'referencia_tipo'=> 'ajuste_manual',
-                ]);
-
-                $delta = $request->tipo === 'merma' ? -$request->cantidad : $request->cantidad;
-                $producto->increment('stock_actual', $delta);
+                // Merma: descontar desde lotes FIFO
+                $this->fifo->descontarInventario(
+                    producto:        $producto,
+                    cantidad:        $request->cantidad,
+                    usuarioId:       $usuario->id,
+                    referenciaTipo:  'ajuste_manual',
+                    referenciaId:    0,
+                );
             }
         });
 

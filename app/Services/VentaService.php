@@ -33,11 +33,16 @@ class VentaService
         ?int $clienteId = null,
         float $descuentoGlobal = 0,
         float $impuesto = 0,
-        ?string $nota = null
+        ?string $nota = null,
+        ?float $pagoEfectivo = null,
+        ?float $pagoTarjeta = null,
+        ?float $pagoTransferencia = null,
+        ?float $pagoQr = null
     ): Venta {
         return DB::transaction(function () use (
             $turnoId, $usuarioId, $items, $metodoPago,
-            $clienteId, $descuentoGlobal, $impuesto, $nota
+            $clienteId, $descuentoGlobal, $impuesto, $nota,
+            $pagoEfectivo, $pagoTarjeta, $pagoTransferencia, $pagoQr
         ) {
             $turno = Turno::lockForUpdate()->findOrFail($turnoId);
 
@@ -75,15 +80,19 @@ class VentaService
             $total = $subtotal - $descuentoGlobal + $impuesto;
 
             $venta = Venta::create([
-                'turno_id'   => $turnoId,
-                'usuario_id' => $usuarioId,
-                'cliente_id' => $clienteId,
-                'subtotal'   => $subtotal,
-                'descuento'  => $descuentoGlobal,
-                'impuesto'   => $impuesto,
-                'total'      => $total,
-                'metodo_pago'=> $metodoPago,
-                'nota'       => $nota,
+                'turno_id'          => $turnoId,
+                'usuario_id'        => $usuarioId,
+                'cliente_id'        => $clienteId,
+                'subtotal'          => $subtotal,
+                'descuento'         => $descuentoGlobal,
+                'impuesto'          => $impuesto,
+                'total'             => $total,
+                'pago_efectivo'     => $pagoEfectivo,
+                'pago_tarjeta'      => $pagoTarjeta,
+                'pago_transferencia'=> $pagoTransferencia,
+                'pago_qr'           => $pagoQr,
+                'metodo_pago'       => $metodoPago,
+                'nota'              => $nota,
             ]);
 
             // Registrar detalles y descontar FIFO
@@ -168,8 +177,12 @@ class VentaService
         // Menú: descontar los ingredientes
         $menu = Menu::with('ingredientes')->find($item['id']);
 
+        if (!$menu) {
+            throw new \RuntimeException("El menú seleccionado ya no está disponible.");
+        }
+
         // Menú directo — no descuenta inventario
-        if ($menu && $menu->tipo === 'directo') {
+        if ($menu->tipo === 'directo') {
             return [];
         }
 

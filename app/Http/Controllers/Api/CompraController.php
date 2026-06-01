@@ -117,8 +117,29 @@ class CompraController extends Controller
         $usuario = JWTAuth::parseToken()->authenticate();
 
         DB::transaction(function () use ($request, $compra, $usuario) {
+            // Bloquear filas de detalle para evitar race conditions en recepciones parciales
+            $detalleIds = collect($request->items)->pluck('detalle_compra_id');
+            $detallesBloqueados = DetalleCompra::whereIn('id', $detalleIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
             foreach ($request->items as $item) {
-                $detalle  = DetalleCompra::findOrFail($item['detalle_compra_id']);
+                $detalle = $detallesBloqueados->get($item['detalle_compra_id']);
+
+                if (!$detalle) {
+                    throw new \RuntimeException("Detalle de compra no encontrado.");
+                }
+
+                // Validar que no se exceda la cantidad ordenada
+                $nuevaRecibida = $detalle->cantidad_recibida + $item['cantidad_recibida'];
+                if ($nuevaRecibida > $detalle->cantidad_ordenada) {
+                    $nombreProducto = $detalle->producto?->nombre ?? 'producto';
+                    throw new \RuntimeException(
+                        "La cantidad recibida ({$nuevaRecibida}) excede lo ordenado ({$detalle->cantidad_ordenada}) para '{$nombreProducto}'."
+                    );
+                }
+
                 $producto = Producto::find($detalle->producto_id);
 
                 $lote = $this->fifo->registrarEntrada(
@@ -131,14 +152,19 @@ class CompraController extends Controller
                     fechaVencimiento: $item['fecha_vencimiento'] ?? null,
                 );
 
-                $detalle->update([
-                    'cantidad_recibida' => $detalle->cantidad_recibida + $item['cantidad_recibida'],
-                    'lote_generado_id'  => $lote->id,
-                ]);
+                $detalle->cantidad_recibida += $item['cantidad_recibida'];
+                $attrs = ['cantidad_recibida' => $detalle->cantidad_recibida];
+                // Solo guardar el primer lote de referencia (no sobrescribir en parciales)
+                if (!$detalle->lote_generado_id) {
+                    $attrs['lote_generado_id'] = $lote->id;
+                }
+                $detalle->update($attrs);
             }
 
+            // Refrescar desde DB para el cálculo de recibido total
+            $compra->refresh();
             $todoRecibido = $compra->detalles->every(
-                fn ($d) => $d->fresh()->cantidad_recibida >= $d->cantidad_ordenada
+                fn ($d) => $d->cantidad_recibida >= $d->cantidad_ordenada
             );
 
             $compra->update([
