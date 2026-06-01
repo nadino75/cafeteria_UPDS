@@ -88,8 +88,7 @@ async function handleLogin() {
 
 .login-page {
   min-height: 100vh;
-  background: #0a0a0a;
-  background-image: radial-gradient(circle at 10% 20%, rgba(30,30,30,0.9) 0%, #000000 100%);
+  background: var(--color-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -105,13 +104,13 @@ async function handleLogin() {
 }
 
 .login-container {
-  background: rgba(20,20,20,0.9);
-  backdrop-filter: blur(12px);
+  background: var(--color-card);
+  border: 1px solid var(--color-edge);
   border-radius: 32px;
   padding: 2.5rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 25px 45px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,197,66,0.2);
+  box-shadow: 0 25px 45px rgba(0,0,0,0.3);
   text-align: center;
   animation: fadeInUp 0.6s ease;
 }
@@ -128,7 +127,7 @@ async function handleLogin() {
 }
 
 .login-container h2 {
-  color: #f5c542;
+  color: var(--color-amber);
   font-family: 'Room-205', serif;
   font-size: 1.8rem;
   margin-bottom: 0.5rem;
@@ -136,7 +135,7 @@ async function handleLogin() {
 }
 
 .login-container > p {
-  color: #ccc;
+  color: var(--color-ink-mute);
   margin-bottom: 2rem;
   font-size: 0.85rem;
 }
@@ -148,7 +147,7 @@ async function handleLogin() {
 
 .input-group label {
   display: block;
-  color: #ddd;
+  color: var(--color-ink);
   font-size: 0.8rem;
   margin-bottom: 0.4rem;
   font-weight: 500;
@@ -157,10 +156,10 @@ async function handleLogin() {
 .input-group input {
   width: 100%;
   padding: 12px 15px;
-  background: #2a2a2a;
-  border: 1px solid #444;
+  background: var(--color-elevated);
+  border: 1px solid var(--color-edge);
   border-radius: 40px;
-  color: white;
+  color: var(--color-ink);
   font-size: 1rem;
   outline: none;
   transition: all 0.2s;
@@ -168,18 +167,18 @@ async function handleLogin() {
 }
 
 .input-group input::placeholder {
-  color: #666;
+  color: var(--color-ink-dim);
 }
 
 .input-group input:focus {
-  border-color: #f5c542;
-  box-shadow: 0 0 0 2px rgba(245,197,66,0.3);
+  border-color: var(--color-amber);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-amber) 30%, transparent);
 }
 
 .login-btn {
   width: 100%;
-  background: #f5c542;
-  color: #1a1a1a;
+  background: var(--color-amber);
+  color: var(--color-base);
   border: none;
   padding: 12px;
   border-radius: 40px;
@@ -203,7 +202,7 @@ async function handleLogin() {
 }
 
 .error-message {
-  color: #ff6b6b;
+  color: var(--color-err);
   font-size: 0.8rem;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
@@ -211,7 +210,7 @@ async function handleLogin() {
 }
 
 .register-link {
-  color: #888;
+  color: var(--color-ink-dim);
   font-size: 0.75rem;
   margin-top: 1.5rem;
 }

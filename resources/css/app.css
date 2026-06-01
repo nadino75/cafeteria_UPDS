@@ -66,6 +66,22 @@
   src: url('https://onyxcoffeelab.com/cdn/shop/t/31/assets/Room-205.woff2?v=18721117088091669681705351138') format('woff2');
 }
 
+html.light {
+  --color-base:     #F5F3F0;
+  --color-surface:  #FFFFFF;
+  --color-card:     #F0EDEA;
+  --color-elevated: #EBE7E2;
+  --color-edge:     #D4CEC8;
+  --color-edge-lit: #B8B0A8;
+  --color-ink:      #0A0806;
+  --color-ink-mute: #3D302A;
+  --color-ink-dim:  #6B5A52;
+}
+
+html.light ::-webkit-scrollbar-track { background: var(--color-base); }
+html.light ::-webkit-scrollbar-thumb { background: var(--color-edge); }
+html.light ::-webkit-scrollbar-thumb:hover { background: var(--color-ink-mute); }
+
 *, *::before, *::after { box-sizing: border-box; }
 
 body {

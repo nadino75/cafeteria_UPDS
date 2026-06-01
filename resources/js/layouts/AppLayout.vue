@@ -31,7 +31,6 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppHeader  from '@/components/AppHeader.vue'
-
 const sidebarCollapsed = ref(false)
 const sidebarOpen      = ref(false)
 const windowWidth      = ref(window.innerWidth)
