@@ -28,54 +28,112 @@
     <!-- Gráfico ventas + alertas -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-      <div class="lg:col-span-2 bg-card border border-edge rounded-xl p-5">
-        <div class="flex items-center justify-between mb-4">
+      <div class="lg:col-span-2 bg-card border border-edge rounded-xl p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-4 flex-shrink-0">
           <h2 class="font-display text-lg text-ink font-medium">Ventas — últimos 7 días</h2>
           <span class="text-ink-dim text-xs font-mono">Bs.</span>
         </div>
-        <div v-if="cargandoGrafico" class="h-32 flex items-center justify-center text-ink-dim text-sm">
+        <div v-if="cargandoGrafico" class="flex-1 flex items-center justify-center text-ink-dim text-sm">
           Cargando...
         </div>
-        <MiniChart v-else :datos="ventasSemana" tipo="bar" style="height:128px" />
-        <div class="flex justify-between mt-3 px-1">
+        <MiniChart v-else :datos="ventasSemana" tipo="bar" class="flex-1 min-h-0" />
+        <div class="flex justify-between mt-3 px-1 flex-shrink-0">
           <span v-for="dia in labelsSemana" :key="dia" class="text-ink-dim text-[10px]">{{ dia }}</span>
         </div>
       </div>
 
-      <div class="bg-card border border-edge rounded-xl p-5">
-        <h2 class="font-display text-lg text-ink font-medium mb-4">Alertas del sistema</h2>
+      <div class="bg-card border border-edge rounded-xl p-5 flex flex-col gap-5">
 
-        <div v-if="stockBajo.length === 0 && vencimientos.length === 0" class="text-ink-mute text-sm py-4 text-center">Sin alertas críticas ✓</div>
+        <div>
+          <h2 class="font-display text-lg text-ink font-medium mb-4">Alertas del sistema</h2>
 
-        <div v-if="stockBajo.length > 0" class="mb-4">
-          <h3 class="flex items-center gap-2 text-sm font-semibold text-ink mb-2">
-            <AlertBadge texto="Stock" severidad="err" />
-            {{ stockBajo.length }} producto(s) bajo mínimo
-          </h3>
-          <div v-for="p in stockBajo" :key="p.id" class="mb-1 last:mb-0">
-            <div class="flex items-center justify-between py-1 px-3 bg-danger/5 rounded-lg text-sm">
+          <template v-if="sinAlertas">
+            <div class="text-ink-mute text-sm py-4 text-center">Sin alertas críticas ✓</div>
+          </template>
+
+          <!-- Stock crítico (0) -->
+          <div v-if="stockCritico.length > 0">
+            <h3 class="flex items-center gap-2 text-sm font-semibold text-err mb-2">
+              <AlertBadge texto="Sin stock" severidad="err" />
+              {{ stockCritico.length }} producto(s) sin stock
+            </h3>
+            <div v-for="p in stockCritico" :key="p.id" class="flex items-center justify-between py-1 px-3 bg-err/5 rounded-lg text-sm mb-1">
               <span class="text-ink font-medium">{{ p.nombre }}</span>
-              <span class="text-ink-mute text-xs font-mono whitespace-nowrap ml-2">
-                {{ p.stock_actual }} / {{ p.stock_minimo }} {{ p.unidad_medida }}
+              <span class="text-ink-dim text-xs">{{ p.categoria }}</span>
+            </div>
+          </div>
+
+          <!-- Stock bajo -->
+          <div v-if="stockBajo.length > 0">
+            <h3 class="flex items-center gap-2 text-sm font-semibold text-warn mb-2 mt-4">
+              <AlertBadge texto="Stock bajo" severidad="warn" />
+              {{ stockBajo.length }} producto(s) bajo mínimo
+            </h3>
+            <div v-for="p in stockBajo" :key="p.id" class="mb-1 last:mb-0">
+              <div class="flex items-center justify-between py-1 px-3 bg-warning/5 rounded-lg text-sm">
+                <span class="text-ink font-medium">{{ p.nombre }}</span>
+                <span class="text-ink-mute text-xs font-mono whitespace-nowrap ml-2">
+                  {{ p.stock_actual }} / {{ p.stock_minimo }} {{ p.unidad_medida }}
+                </span>
+              </div>
+              <div v-if="p.menus.length > 0" class="ml-4 mt-0.5 mb-1 text-xs text-ink-dim">
+                Afecta a: <span v-for="(m, i) in p.menus" :key="m.id">{{ m.nombre }}<template v-if="i < p.menus.length - 1">, </template></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vencimientos -->
+          <div v-if="vencimientos.length > 0">
+            <h3 class="flex items-center gap-2 text-sm font-semibold text-warn mb-2 mt-4">
+              <AlertBadge texto="Vencimiento" severidad="warn" />
+              {{ vencimientos.length }} lote(s) vencen pronto
+            </h3>
+            <div v-for="l in vencimientos" :key="l.id" class="flex items-center justify-between py-1 px-3 bg-warning/5 rounded-lg text-sm mb-1">
+              <span class="text-ink font-medium">{{ l.producto_nombre }}</span>
+              <span class="text-ink-mute text-xs font-mono whitespace-nowrap ml-2">Lote {{ l.numero_lote }} — {{ l.dias_restantes }}d</span>
+            </div>
+          </div>
+
+          <!-- Turnos abiertos del día anterior -->
+          <div v-if="turnosAbiertosAnterior.length > 0">
+            <h3 class="flex items-center gap-2 text-sm font-semibold text-err mb-2 mt-4">
+              <AlertBadge texto="Turno abierto" severidad="err" />
+              {{ turnosAbiertosAnterior.length }} turno(s) sin cerrar
+            </h3>
+            <div v-for="t in turnosAbiertosAnterior" :key="t.id" class="flex items-center justify-between py-1 px-3 bg-err/5 rounded-lg text-sm mb-1">
+              <span class="text-ink font-medium">{{ t.usuario }}</span>
+              <span class="text-ink-dim text-xs font-mono whitespace-nowrap ml-2">{{ formatFecha(t.fecha_apertura) }}</span>
+            </div>
+          </div>
+
+          <!-- Proveedores sin compras -->
+          <div v-if="proveedoresSinCompras.length > 0">
+            <h3 class="flex items-center gap-2 text-sm font-semibold text-ink mb-2 mt-4">
+              <AlertBadge texto="Inactivo" severidad="info" />
+              {{ proveedoresSinCompras.length }} proveedor(es) sin compras recientes
+            </h3>
+            <div v-for="p in proveedoresSinCompras" :key="p.id" class="flex items-center justify-between py-1 px-3 bg-elevated/5 rounded-lg text-sm mb-1">
+              <span class="text-ink font-medium">{{ p.nombre_empresa }}</span>
+              <span class="text-ink-dim text-xs whitespace-nowrap ml-2">{{ p.ultima_compra ? formatFecha(p.ultima_compra) : 'Sin compras' }}</span>
+            </div>
+          </div>
+
+          <!-- Discrepancias en cierres -->
+          <div v-if="discrepanciasCierres.length > 0">
+            <h3 class="flex items-center gap-2 text-sm font-semibold text-err mb-2 mt-4">
+              <AlertBadge texto="Discrepancia" severidad="err" />
+              {{ discrepanciasCierres.length }} cierre(s) con diferencia
+            </h3>
+            <div v-for="d in discrepanciasCierres.slice(0, 5)" :key="d.id" class="flex items-center justify-between py-1 px-3 bg-err/5 rounded-lg text-sm mb-1">
+              <span class="text-ink font-medium">{{ d.codigo }}</span>
+              <span :class="['text-xs font-mono whitespace-nowrap ml-2', d.diferencia < 0 ? 'text-err' : 'text-warn']">
+                {{ d.diferencia > 0 ? '+' : '' }}{{ d.diferencia.toFixed(2) }}
               </span>
             </div>
-            <div v-if="p.menus.length > 0" class="ml-4 mt-0.5 mb-1 text-xs text-ink-dim">
-              Afecta a: <span v-for="(m, i) in p.menus" :key="m.id">{{ m.nombre }}<template v-if="i < p.menus.length - 1">, </template></span>
-            </div>
           </div>
         </div>
+    </div>
 
-        <div v-if="vencimientos.length > 0">
-          <h3 class="flex items-center gap-2 text-sm font-semibold text-ink mb-2">
-            <AlertBadge texto="Vencimiento" severidad="warn" />
-            {{ vencimientos.length }} lote(s) vencen pronto
-          </h3>
-          <div v-for="l in vencimientos" :key="l.id" class="flex items-center justify-between py-1 px-3 bg-warning/5 rounded-lg text-sm mb-1 last:mb-0">
-            <span class="text-ink font-medium">{{ l.producto_nombre }}</span>
-            <span class="text-ink-mute text-xs font-mono whitespace-nowrap ml-2">Lote {{ l.numero_lote }} — {{ l.dias_restantes }}d</span>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Últimas ventas del día -->
@@ -130,7 +188,20 @@ const ultimasVentas = ref([])
 const ventasSemana  = ref([0,0,0,0,0,0,0])
 const stockBajo     = ref([])
 const vencimientos  = ref([])
+const stockCritico  = ref([])
+const turnosAbiertosAnterior = ref([])
+const proveedoresSinCompras  = ref([])
+const discrepanciasCierres   = ref([])
 const cargandoGrafico = ref(true)
+
+const sinAlertas = computed(() =>
+  stockBajo.value.length === 0 &&
+  vencimientos.value.length === 0 &&
+  stockCritico.value.length === 0 &&
+  turnosAbiertosAnterior.value.length === 0 &&
+  proveedoresSinCompras.value.length === 0 &&
+  discrepanciasCierres.value.length === 0
+)
 
 const primerNombre = computed(() => auth.nombreCompleto.split(' ')[0] || 'Administrador')
 const fechaHoy     = computed(() => new Date().toLocaleDateString('es-BO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
@@ -147,6 +218,9 @@ function isoDate(offset = 0) {
 }
 function formatHora(iso) {
   return new Date(iso).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' })
+}
+function formatFecha(iso) {
+  return new Date(iso).toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })
 }
 
 onMounted(() => Promise.all([cargarKpis(), cargarVentas(), cargarGrafico(), cargarAlertas()]))
@@ -201,9 +275,13 @@ async function cargarGrafico() {
 }
 
 async function cargarAlertas() {
-  const r = await client.get('/inventario/alertas').catch(() => null)
+  const r = await client.get('/inventario/alertas-dashboard').catch(() => null)
   const data = r?.data?.data
-  stockBajo.value    = data?.stock_bajo   ?? []
-  vencimientos.value = data?.vencimientos ?? []
+  stockBajo.value             = data?.stock_bajo             ?? []
+  vencimientos.value          = data?.vencimientos           ?? []
+  stockCritico.value          = data?.stock_critico          ?? []
+  turnosAbiertosAnterior.value = data?.turnos_abiertos_anterior ?? []
+  proveedoresSinCompras.value  = data?.proveedores_sin_compras  ?? []
+  discrepanciasCierres.value   = data?.discrepancias_cierres    ?? []
 }
 </script>

@@ -65,6 +65,7 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('vencimientos',  [InventarioController::class, 'alertasVencimiento']);
         Route::post('ajuste',       [InventarioController::class, 'ajustarStock']);
         Route::get('alertas',       [InventarioController::class, 'alertas']);
+        Route::get('alertas-dashboard', [InventarioController::class, 'alertasDashboard']);
     });
 
     // Turnos

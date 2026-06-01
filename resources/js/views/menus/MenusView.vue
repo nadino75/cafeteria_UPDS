@@ -24,9 +24,9 @@
               <th class="text-left px-5 py-3">Nombre</th>
               <th class="text-center px-5 py-3">Imagen</th>
               <th class="text-left px-5 py-3">Categoría</th>
+              <th class="text-center px-5 py-3">Tipo</th>
               <th class="text-right px-5 py-3">Precio Venta</th>
-              <th class="text-center px-5 py-3">Ingredientes</th>
-              <th class="text-center px-5 py-3">Disponible</th>
+              <th class="text-center px-5 py-3">Disp.</th>
               <th class="text-center px-5 py-3">Activo</th>
               <th class="text-center px-5 py-3">Acciones</th>
             </tr>
@@ -48,8 +48,17 @@
                   {{ m.categoria?.nombre || '—' }}
                 </span>
               </td>
+              <td class="px-5 py-3 text-center">
+                <span v-if="m.tipo === 'directo'"
+                  class="inline-flex px-2 py-0.5 rounded text-xs bg-info/10 text-info border border-info/30">
+                  Directo
+                </span>
+                <span v-else
+                  class="inline-flex px-2 py-0.5 rounded text-xs bg-elevated text-ink-mute border border-edge">
+                  {{ m.ingredientes?.length ?? 0 }} ing.
+                </span>
+              </td>
               <td class="px-5 py-3 text-right font-mono text-amber">Bs. {{ Number(m.precio_venta).toFixed(2) }}</td>
-              <td class="px-5 py-3 text-center text-ink-dim text-xs">{{ m.ingredientes?.length ?? 0 }}</td>
               <td class="px-5 py-3 text-center text-ink-dim text-xs">
                 {{ m.disponible_desde ? m.disponible_desde.slice(0,5) : '—' }} - {{ m.disponible_hasta ? m.disponible_hasta.slice(0,5) : '—' }}
               </td>
@@ -89,6 +98,56 @@
             <input v-model="form.nombre" type="text"
               class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
           </div>
+
+          <!-- Tipo -->
+          <div>
+            <label class="block text-ink-mute text-sm mb-2">Tipo</label>
+            <div class="flex gap-2">
+              <button type="button" @click="form.tipo = 'preparado'"
+                :class="['flex-1 py-2 rounded-lg text-sm font-medium border transition-colors',
+                  form.tipo === 'preparado'
+                    ? 'bg-amber/20 text-amber border-amber/50'
+                    : 'bg-elevated text-ink-mute border-edge hover:border-ink-dim/30']">
+                Preparado
+              </button>
+              <button type="button" @click="form.tipo = 'directo'"
+                :class="['flex-1 py-2 rounded-lg text-sm font-medium border transition-colors',
+                  form.tipo === 'directo'
+                    ? 'bg-info/20 text-info border-info/50'
+                    : 'bg-elevated text-ink-mute border-edge hover:border-ink-dim/30']">
+                Directo
+              </button>
+            </div>
+            <p class="text-ink-dim text-xs mt-1">
+              {{ form.tipo === 'directo' ? 'Venta directa sin control de inventario' : 'Consume ingredientes del inventario' }}
+            </p>
+          </div>
+
+          <!-- Producto base (solo directo) -->
+          <div v-if="form.tipo === 'directo'">
+            <label class="block text-ink-mute text-sm mb-2">Producto base (opcional)</label>
+            <select v-model="productoBaseId" @change="onProductoBaseChange"
+              class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber">
+              <option :value="null">Seleccionar producto...</option>
+              <option v-for="p in productos" :key="p.id" :value="p.id">{{ p.nombre }} — Bs. {{ Number(p.precio_venta ?? p.costo_unitario ?? 0).toFixed(2) }}</option>
+            </select>
+            <p class="text-ink-dim text-xs mt-1">Rellena nombre y precio automáticamente</p>
+          </div>
+
+          <div>
+            <label class="block text-ink-mute text-sm mb-1">Precio venta *</label>
+            <input v-model.number="form.precio_venta" type="number" min="0" step="0.01"
+              class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
+          </div>
+
+          <!-- Costo (solo directo) -->
+          <div v-if="form.tipo === 'directo'">
+            <label class="block text-ink-mute text-sm mb-1">Costo unitario (Bs.)</label>
+            <input v-model.number="form.costo" type="number" min="0" step="0.01" placeholder="0.00"
+              class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
+            <p class="text-ink-dim text-xs mt-1">Costo de adquisición del producto (opcional)</p>
+          </div>
+
           <div>
             <label class="block text-ink-mute text-sm mb-1">Descripción</label>
             <textarea v-model="form.descripcion" rows="2"
@@ -96,16 +155,11 @@
           </div>
           <div>
             <label class="block text-ink-mute text-sm mb-1">Categoría</label>
-            <select v-model="form.categoria_id"
+            <select v-model="form.categoria_id" @change="onCategoriaChange(form.categoria_id)"
               class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber">
               <option value="">Sin categoría</option>
               <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre }}</option>
             </select>
-          </div>
-          <div>
-            <label class="block text-ink-mute text-sm mb-1">Precio venta *</label>
-            <input v-model.number="form.precio_venta" type="number" min="0" step="0.01"
-              class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber" />
           </div>
           <div>
             <label class="block text-ink-mute text-sm mb-1">Imagen</label>
@@ -136,8 +190,8 @@
             </div>
           </div>
 
-          <!-- Ingredientes -->
-          <div class="pt-3 border-t border-edge">
+          <!-- Ingredientes (solo preparado) -->
+          <div v-if="form.tipo === 'preparado'" class="pt-3 border-t border-edge">
             <div class="flex items-center justify-between mb-2">
               <label class="text-ink-mute text-sm font-medium">Ingredientes *</label>
               <button @click="agregarIngrediente" type="button"
@@ -219,16 +273,39 @@ const guardando    = ref(false)
 const errorForm    = ref(null)
 const imagenPreview = ref(null)
 const imagenFile   = ref(null)
+const productoBaseId = ref(null)
+
+function onProductoBaseChange() {
+  const p = productos.value.find(x => x.id === productoBaseId.value)
+  if (!p) return
+  form.value.nombre = p.nombre
+  const precio = p.precio_venta ?? p.costo_unitario ?? 0
+  if (!form.value.precio_venta) form.value.precio_venta = Number(precio)
+  if (!form.value.costo) form.value.costo = Number(p.costo_unitario ?? 0)
+}
 const form         = ref({
   nombre: '',
   descripcion: '',
   categoria_id: '',
   precio_venta: null,
+  tipo: 'preparado',
+  costo: null,
   imagen_url: '',
   disponible_desde: '',
   disponible_hasta: '',
   ingredientes: [],
 })
+
+// Categorías que por defecto sugieren tipo "directo"
+const CATEGORIAS_DIRECTO = ['Repostería', 'Alimentos']
+
+function onCategoriaChange(catId) {
+  if (modoEdicion.value) return
+  const cat = categorias.value.find(c => c.id === catId)
+  if (cat && CATEGORIAS_DIRECTO.includes(cat.nombre)) {
+    form.value.tipo = 'directo'
+  }
+}
 
 function agregarIngrediente() {
   form.value.ingredientes.push({ producto_id: '', cantidad: null, unidad_medida: '' })
@@ -236,6 +313,7 @@ function agregarIngrediente() {
 
 function abrirModal(menu = null) {
   errorForm.value = null
+  productoBaseId.value = null
   if (menu) {
     modoEdicion.value = true
     form.value = {
@@ -243,6 +321,8 @@ function abrirModal(menu = null) {
       descripcion: menu.descripcion || '',
       categoria_id: menu.categoria_id || '',
       precio_venta: menu.precio_venta,
+      tipo: menu.tipo || 'preparado',
+      costo: menu.costo ?? null,
       imagen_url: menu.imagen_url || '',
       disponible_desde: menu.disponible_desde || '',
       disponible_hasta: menu.disponible_hasta || '',
@@ -255,7 +335,7 @@ function abrirModal(menu = null) {
     }
   } else {
     modoEdicion.value = false
-    form.value = { nombre: '', descripcion: '', categoria_id: '', precio_venta: null, imagen_url: '', disponible_desde: '', disponible_hasta: '', ingredientes: [] }
+    form.value = { nombre: '', descripcion: '', categoria_id: '', precio_venta: null, tipo: 'preparado', costo: null, imagen_url: '', disponible_desde: '', disponible_hasta: '', ingredientes: [] }
   }
   modalAbierto.value = true
 }
@@ -265,6 +345,7 @@ function cerrarModal() {
   errorForm.value = null
   imagenPreview.value = null
   imagenFile.value = null
+  productoBaseId.value = null
 }
 
 function onImagenFileChange(e) {
@@ -280,7 +361,12 @@ async function guardar() {
   guardando.value = true; errorForm.value = null
   try {
     const hasFile = imagenFile.value !== null
-    const payload = hasFile ? buildFormData() : { ...form.value }
+    const raw = { ...form.value }
+    // Convertir vacíos a null para campos opcionales
+    ;['categoria_id', 'descripcion', 'imagen_url', 'disponible_desde', 'disponible_hasta'].forEach(k => {
+      if (raw[k] === '') raw[k] = null
+    })
+    const payload = hasFile ? buildFormData() : raw
     const config  = hasFile ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
 
     if (modoEdicion.value) {
@@ -308,7 +394,7 @@ async function guardar() {
 function buildFormData() {
   const fd = new FormData()
   fd.append('imagen', imagenFile.value)
-  ;['nombre', 'descripcion', 'categoria_id', 'precio_venta', 'imagen_url',
+  ;['nombre', 'descripcion', 'categoria_id', 'precio_venta', 'tipo', 'costo', 'imagen_url',
     'disponible_desde', 'disponible_hasta'].forEach(k => {
     if (form.value[k] != null && form.value[k] !== '') fd.append(k, form.value[k])
   })

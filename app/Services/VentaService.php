@@ -167,6 +167,12 @@ class VentaService
 
         // Menú: descontar los ingredientes
         $menu = Menu::with('ingredientes')->find($item['id']);
+
+        // Menú directo — no descuenta inventario
+        if ($menu && $menu->tipo === 'directo') {
+            return [];
+        }
+
         $resultado = [];
 
         foreach ($menu->ingredientes as $ing) {

@@ -7,6 +7,9 @@ use App\Models\LoteInventario;
 use App\Models\MenuIngrediente;
 use App\Models\MovimientoInventario;
 use App\Models\Producto;
+use App\Models\Turno;
+use App\Models\Proveedor;
+use App\Models\Compra;
 use App\Services\FifoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -182,6 +185,136 @@ class InventarioController extends Controller
             'data'    => [
                 'stock_bajo'  => $stockBajo,
                 'vencimientos'=> $vencimientos,
+            ],
+        ]);
+    }
+
+    public function alertasDashboard(): JsonResponse
+    {
+        $hoy = Carbon::today();
+
+        // 1. Stock bajo (existente)
+        $productosBajoStock = Producto::whereColumn('stock_actual', '<=', 'stock_minimo')
+            ->where('activo', true)
+            ->with('categoria')
+            ->get();
+
+        $productIds = $productosBajoStock->pluck('id');
+
+        $menusAfectados = MenuIngrediente::whereIn('producto_id', $productIds)
+            ->with(['menu:id,nombre,activo', 'producto:id,nombre'])
+            ->get()
+            ->groupBy('producto_id');
+
+        $stockBajo = $productosBajoStock->map(function ($p) use ($menusAfectados) {
+            return [
+                'id'             => $p->id,
+                'nombre'         => $p->nombre,
+                'stock_actual'   => $p->stock_actual,
+                'stock_minimo'   => $p->stock_minimo,
+                'unidad_medida'  => $p->unidad_medida,
+                'categoria'      => $p->categoria?->nombre ?? '—',
+                'menus'          => $menusAfectados->get($p->id, collect())->map(function ($mi) {
+                    return [
+                        'id'                 => $mi->menu->id,
+                        'nombre'             => $mi->menu->nombre,
+                        'activo'             => $mi->menu->activo,
+                        'cantidad_necesaria' => (float) $mi->cantidad,
+                        'unidad'             => $mi->unidad_medida,
+                    ];
+                })->values(),
+            ];
+        });
+
+        // 2. Vencimientos próximos (existente)
+        $vencimientos = LoteInventario::with('producto')
+            ->where('estado', 'disponible')
+            ->where('fecha_vencimiento', '<=', Carbon::now()->addDays(7))
+            ->orderBy('fecha_vencimiento', 'asc')
+            ->get()
+            ->map(function ($l) {
+                return [
+                    'id'                => $l->id,
+                    'producto_nombre'   => $l->producto?->nombre ?? '—',
+                    'numero_lote'       => $l->numero_lote,
+                    'fecha_vencimiento' => $l->fecha_vencimiento,
+                    'cantidad'          => $l->cantidad,
+                    'dias_restantes'    => (int) Carbon::now()->diffInDays($l->fecha_vencimiento),
+                ];
+            });
+
+        // 3. Stock crítico (stock_actual = 0)
+        $stockCritico = Producto::where('stock_actual', 0)
+            ->where('activo', true)
+            ->with('categoria')
+            ->get()
+            ->map(function ($p) {
+                return [
+                    'id'            => $p->id,
+                    'nombre'        => $p->nombre,
+                    'unidad_medida' => $p->unidad_medida,
+                    'categoria'     => $p->categoria?->nombre ?? '—',
+                ];
+            });
+
+        // 4. Turnos abiertos del día anterior
+        $turnosAbiertosAnterior = Turno::with('usuarioApertura')
+            ->where('estado', 'abierto')
+            ->whereDate('fecha_apertura', '<', $hoy)
+            ->get()
+            ->map(function ($t) {
+                return [
+                    'id'              => $t->id,
+                    'codigo'          => $t->codigo,
+                    'usuario'         => $t->usuarioApertura?->nombre_completo ?? '—',
+                    'fecha_apertura'  => $t->fecha_apertura,
+                ];
+            });
+
+        // 5. Proveedores sin compras en los últimos 30 días
+        $proveedoresSinCompras = Proveedor::where('activo', true)
+            ->whereDoesntHave('compras', function ($q) {
+                $q->whereDate('fecha_orden', '>=', Carbon::now()->subDays(30));
+            })
+            ->get()
+            ->map(function ($p) {
+                $ultimaCompra = $p->compras()->latest('fecha_orden')->first();
+                return [
+                    'id'              => $p->id,
+                    'nombre_empresa'  => $p->nombre_empresa,
+                    'contacto'        => $p->contacto_nombre,
+                    'telefono'        => $p->telefono,
+                    'ultima_compra'   => $ultimaCompra?->fecha_orden,
+                ];
+            });
+
+        // 6. Discrepancias en cierres de turno
+        $discrepanciasCierres = Turno::with('usuarioApertura', 'usuarioCierre')
+            ->where('estado', 'cerrado')
+            ->whereColumn('caja_final_real', '!=', 'caja_final_esperada')
+            ->orderBy('fecha_cierre', 'desc')
+            ->get()
+            ->map(function ($t) {
+                return [
+                    'id'                 => $t->id,
+                    'codigo'             => $t->codigo,
+                    'usuario_apertura'   => $t->usuarioApertura?->nombre_completo ?? '—',
+                    'fecha_cierre'       => $t->fecha_cierre,
+                    'caja_final_esperada'=> (float) $t->caja_final_esperada,
+                    'caja_final_real'    => (float) $t->caja_final_real,
+                    'diferencia'         => round((float) $t->caja_final_real - (float) $t->caja_final_esperada, 2),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'stock_bajo'             => $stockBajo,
+                'vencimientos'           => $vencimientos,
+                'stock_critico'          => $stockCritico,
+                'turnos_abiertos_anterior'  => $turnosAbiertosAnterior,
+                'proveedores_sin_compras'   => $proveedoresSinCompras,
+                'discrepancias_cierres'     => $discrepanciasCierres,
             ],
         ]);
     }

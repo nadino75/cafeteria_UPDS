@@ -5,7 +5,11 @@ import { DASHBOARD_BY_ROL } from './dashboards.js'
 export { DASHBOARD_BY_ROL }
 
 const routes = [
-  { path: '/', redirect: '/login' },
+  {
+    path: '/',
+    component: () => import('@/views/LandingView.vue'),
+    meta: { publico: true },
+  },
   {
     path: '/login',
     component: () => import('@/views/auth/LoginView.vue'),

@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+  <title>Cafetería UPDS | Menos teoría, más sabor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Room-205';
+      font-display: swap;
+      src: url('https://onyxcoffeelab.com/cdn/shop/t/31/assets/Room-205.woff2?v=18721117088091669681705351138') format('woff2');
+    }
+    @font-face {
+      font-family: 'Montserrat';
+      font-style: normal;
+      font-weight: 400 800;
+      font-display: swap;
+      src: url(https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459WlhyyTh89Y.woff2) format('woff2');
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #0a0a0a;
+      color: #f0f0f0;
+      line-height: 1.4;
+      overflow-x: hidden;
+    }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+    
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 1.5rem 2rem;
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+    header.scrolled {
+      background: #0a0a0a;
+      padding: 0.8rem 2rem;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+    }
+    header .container-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .logo-img {
+      height: 45px;
+      width: auto;
+      display: block;
+      filter: brightness(0) invert(1);
+    }
+    header.scrolled .logo-img {
+      filter: brightness(0) invert(1);
+    }
+    .menu-nav {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+    .menu-nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .menu-nav a:hover { opacity: 0.7; }
+    .menu-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 30px;
+      height: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .menu-button .bar {
+      width: 100%;
+      height: 2px;
+      background: white;
+      transition: 0.3s;
+    }
+    
+    /* HERO con video de fondo */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      background: #0a0a0a;
+    }
+    .hero .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    .hero .background video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.6;
+      filter: brightness(0.7) contrast(1.1);
+    }
+    .hero .overlay {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 950px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Contenedor de logos institucionales */
+    .rapid-logos-container {
+      width: 500px;
+      max-width: 90%;
+      height: 240px;
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .logos-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .logo-institucion {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 0.6s ease-in-out;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+    .logo-institucion.active {
+      opacity: 1;
+    }
+    
+    /* Logo final - ANIMACIÓN PROFESIONAL 3D + GLOW */
+    .logo-final {
+      width: 100%;
+      display: none;
+      text-align: center;
+    }
+    .logo-final.animar {
+      animation: logoProAnimation 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.2) forwards;
+    }
+    .logo-final img {
+      width: 100%;
+      max-width: 340px;
+      height: auto;
+      margin: 0 auto 1rem auto;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+      animation: glowPulsante 2s ease-in-out 0.8s infinite alternate;
+    }
+    
+    @keyframes logoProAnimation {
+      0% {
+        opacity: 0;
+        transform: scale(0.3) rotateY(-90deg);
+        filter: blur(10px) brightness(0.3);
+      }
+      40% {
+        opacity: 0.9;
+        transform: scale(1.08) rotateY(5deg);
+        filter: blur(2px) brightness(1.2);
+      }
+      70% {
+        transform: scale(0.98) rotateY(0deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotateY(0);
+        filter: blur(0) brightness(1);
+      }
+    }
+    
+    @keyframes glowPulsante {
+      0% { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) brightness(1); }
+      100% { filter: drop-shadow(0 0 22px rgba(245, 197, 66, 0.7)) brightness(1.05); }
+    }
+    
+    .hero-titulo {
+      font-family: 'Room-205', serif;
+      font-size: 3.5rem;
+      letter-spacing: 3px;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      color: white;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    .hero-descripcion {
+      max-width: 600px;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.95);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      font-weight: 400;
+      text-align: center;
+      margin: 0 auto;
+    }
+    
+    /* SECCIÓN EXPERIENCIA - con video y texto lateral */
+    .textSplit {
+      padding: 5rem 0;
+      background: #fbfaf3;
+      color: #1a1a1a;
+      overflow-x: hidden;
+    }
+    .textSplit .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3rem;
+      align-items: center;
+    }
+    .textSplit .media {
+      flex: 1;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 35px -15px rgba(0,0,0,0.2);
+    }
+    .textSplit .media video {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .textSplit .media video:hover {
+      transform: scale(1.02);
+    }
+    .textSplit .text {
+      flex: 1;
+    }
+    .textSplit .text h2,
+    .textSplit .text p,
+    .textSplit .text .button {
+      opacity: 0;
+      transform: translateX(-40px);
+      transition: opacity 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.2), transform 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+    }
+    .textSplit.reveal-text .text h2 {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: 0.1s;
+    }
+    .textSplit.reveal-text .text p {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: 0.3s;
+    }
+    .textSplit.reveal-text .text .button {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: 0.5s;
+    }
+    
+    .textSplit .text h2 {
+      font-family: 'Room-205', serif;
+      font-size: 2.8rem;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+    }
+    .textSplit .text p {
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+      color: #2e2e2e;
+    }
+    .textSplit .button {
+      background: #1a1a1a;
+      color: white;
+      padding: 0.8rem 2rem;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-block;
+      transition: all 0.3s ease;
+      border-radius: 40px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    .textSplit .button:hover {
+      background: #3b3b3b;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+    }
+    
+    /* SECCIÓN MENÚ con video de fondo y animaciones */
+    .menu-section {
+      position: relative;
+      padding: 5rem 0;
+      overflow: hidden;
+    }
+    .menu-bg-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      opacity: 0.45;
+      filter: brightness(0.6);
+    }
+    .menu-section .container {
+      position: relative;
+      z-index: 2;
+    }
+    .menu-section h2 {
+      font-family: 'Room-205', serif;
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 3rem;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .menu-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+    }
+    .menu-category {
+      flex: 1;
+      min-width: 280px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      padding: 2rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transition: transform 0.4s ease, box-shadow 0.3s;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .menu-category.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .menu-category:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+    }
+    .menu-category h3 {
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #f5c542;
+      border-bottom: 2px solid #f5c542;
+      display: inline-block;
+      width: auto;
+      padding-bottom: 0.3rem;
+    }
+    .menu-item {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+      transition: transform 0.2s;
+      background: rgba(255,255,255,0.1);
+      padding: 0.8rem;
+      border-radius: 20px;
+      backdrop-filter: blur(2px);
+    }
+    .menu-item:hover {
+      transform: translateX(8px);
+      background: rgba(255,255,255,0.2);
+    }
+    .menu-item img {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 16px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .menu-item-info {
+      flex: 1;
+    }
+    .menu-item-info h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+      color: white;
+    }
+    .menu-item-info p {
+      font-size: 0.85rem;
+      color: #ddd;
+      margin-bottom: 0.3rem;
+    }
+    .menu-item-info .price {
+      font-weight: 700;
+      color: #f5c542;
+    }
+    
+    /* Resto de secciones sin azules */
+    .doubleSplit {
+      padding: 5rem 0;
+      background: #e8e4da;
+      color: #1a1a1a;
+    }
+    .doubleSplit .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    .a-split {
+      flex: 1;
+      min-width: 280px;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+    }
+    .a-split:hover {
+      transform: translateY(-8px);
+    }
+    .a-split .background img,
+    .a-split .background video {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+    }
+    .a-split .text {
+      padding: 2rem;
+    }
+    .a-split h3 {
+      font-family: 'Room-205', serif;
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .a-split p {
+      margin-bottom: 1.2rem;
+      color: #3a3a3a;
+    }
+    .a-split a {
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+      color: #1a1a1a;
+      transition: opacity 0.2s;
+    }
+    .a-split a:hover { opacity: 0.7; }
+    
+    .misc-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+      padding: 5rem 2rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      background: #fbfaf3;
+    }
+    .tile {
+      flex: 1 1 220px;
+      text-align: center;
+      background: white;
+      border-radius: 24px;
+      padding: 1.5rem;
+      transition: all 0.25s;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    }
+    .tile:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 25px rgba(0,0,0,0.08);
+    }
+    .tile img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      border-radius: 50%;
+      margin-bottom: 1rem;
+    }
+    .tile h3 {
+      font-size: 1.4rem;
+      margin-bottom: 0.8rem;
+      color: #1a1a1a;
+    }
+    .tile .button {
+      background: none;
+      border: 1px solid #1a1a1a;
+      padding: 0.4rem 1rem;
+      display: inline-block;
+      text-decoration: none;
+      color: #1a1a1a;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .tile .button:hover {
+      background: #1a1a1a;
+      color: white;
+    }
+    
+    footer {
+      background: #121212;
+      color: #cccccc;
+      padding: 4rem 2rem 2rem;
+    }
+    footer .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: space-between;
+      margin-bottom: 3rem;
+    }
+    footer .span-2 { flex: 2; min-width: 250px; }
+    footer .span-1 { flex: 1; min-width: 160px; }
+    footer h3 {
+      color: white;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    footer a {
+      display: block;
+      color: #aaa;
+      text-decoration: none;
+      margin-bottom: 0.6rem;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    footer a:hover { color: white; }
+    .colophon {
+      border-top: 1px solid #2c2c2c;
+      padding-top: 2rem;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    /* Carrito flotante */
+    .carrito-flotante {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #1e1e1e;
+      color: white;
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+      text-decoration: none;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      transition: transform 0.2s, background 0.2s;
+      cursor: pointer;
+    }
+    .carrito-flotante:hover {
+      transform: scale(1.1);
+      background: #3a3a3a;
+    }
+    .carrito-flotante svg {
+      width: 26px;
+      height: 26px;
+      fill: white;
+    }
+    .cart-count {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #f5c542;
+      color: #1a1a1a;
+      font-size: 0.7rem;
+      font-weight: bold;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    @media (max-width: 800px) {
+      header .menu-nav a { display: none; }
+      .textSplit .container { flex-direction: column; }
+      .rapid-logos-container { width: 90%; height: 180px; }
+      .logo-final img { max-width: 260px; margin-bottom: 0.8rem; }
+      .hero-titulo { font-size: 2.4rem; margin-top: 0rem; }
+      .hero-descripcion { font-size: 0.9rem; }
+      .logo-img { height: 35px; }
+      .menu-item img { width: 55px; height: 55px; }
+      .textSplit .text h2,
+      .textSplit .text p,
+      .textSplit .text .button {
+        transform: translateY(30px);
+      }
+      .textSplit.reveal-text .text h2,
+      .textSplit.reveal-text .text p,
+      .textSplit.reveal-text .text .button {
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header id="main-header">
+  <div class="container-header">
+    <img src="imagenes/LOGO.svg" alt="Logo" class="logo-img">
+    <div class="menu-nav">
+      <a href="#menu">Menú</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#contacto">Contacto</a>
+      <button class="menu-button" aria-label="Menú">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Hero con animación y video -->
+  <div class="hero">
+    <div class="background">
+      <video autoplay loop muted playsinline>
+        <source src="videos/pagina central.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="overlay">
+      <div class="rapid-logos-container">
+        <div class="logos-wrapper">
+          <img class="logo-institucion active" src="imagenes/UPDS.svg" alt="UPDS">
+          <img class="logo-institucion" src="imagenes/LOGO.svg" alt="LOGO">
+          <img class="logo-institucion" src="imagenes/MEDICINA.svg" alt="MEDICINA">
+          <img class="logo-institucion" src="imagenes/PROFESIONALES.svg" alt="PROFESIONALES">
+        </div>
+      </div>
+      <div class="logo-final">
+        <img src="imagenes/CAFETERIA.svg" alt="Logo Cafetería UPDS">
+        <div class="hero-descripcion">
+          Menos teoría, más sabor. Nos unimos a tu ritmo diario en la UPDS para traerte calidad sin vueltas, justo cuando más lo necesitas. El punto de encuentro oficial para tus descansos, para consentir el antojo y recargar la energía necesaria para liderar el día. Pásate y dale un break a tu jornada.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN EXPERIENCIA CON VIDEO -->
+  <div class="textSplit align-left" id="experiencia">
+    <div class="container">
+      <div class="media">
+        <video autoplay loop muted playsinline>
+          <source src="videos/experiencia.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="text">
+        <h2>Vive la experiencia Cafetería UPDS</h2>
+        <p><strong>Comodidad, sabor y momentos únicos</strong></p>
+        <p>Disfrutar en nuestra cafetería no es solo tomar un café: es sumergirte en un espacio diseñado para relajarte, conectar con amigos o recargar energías entre clases. Nuestros sillones, la luz cálida y la música suave te envolverán mientras pruebas nuestras creaciones.</p>
+        <p>Cada taza está hecha pensando en ti: desde un espresso intenso hasta un latte art que alegra la vista. Además, acompañamos tu bebida con repostería casera y snacks saludables. Ven, siéntete como en casa y déjate mimar.</p>
+        <a href="#menu-section" class="button">Ver menú completo →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN MENÚ CON VIDEO DE FONDO Y ANIMACIONES -->
+  <div class="menu-section" id="menu-section">
+    <video class="menu-bg-video" autoplay loop muted playsinline>
+      <source src="videos/menu.mp4" type="video/mp4">
+    </video>
+    <div class="container">
+      <h2>Nuestro Menú</h2>
+      <div class="menu-categories">
+        <!-- Cafés -->
+        <div class="menu-category">
+          <h3>Cafés</h3>
+          <div class="menu-item">
+            <img src="https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Espresso">
+            <div class="menu-item-info">
+              <h4>Espresso Italiano</h4>
+              <p>Intenso, cremoso, 100% arábica</p>
+              <span class="price">Bs. 15</span>
+            </div>
+          </div>
+          <div class="menu-item">
+            <img src="https://images.pexels.com/photos/2507047/pexels-photo-2507047.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Latte">
+            <div class="menu-item-info">
+              <h4>Latte con Arte</h4>
+              <p>Leche vaporizada, arte latte incluido</p>
+              <span class="price">Bs. 22</span>
+            </div>
+          </div>
+          <div class="menu-item">
+            <img src="https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Cold Brew">
+            <div class="menu-item-info">
+              <h4>Cold Brew de especialidad</h4>
+              <p>12h de extracción en frío, notas a chocolate</p>
+              <span class="price">Bs. 25</span>
+            </div>
+          </div>
+        </div>
+        <!-- Postres -->
+        <div class="menu-category">
+          <h3>Postres</h3>
+          <div class="menu-item">
+            <img src="https://images.pexels.com/photos/1126359/pexels-photo-1126359.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Cheesecake">
+            <div class="menu-item-info">
+              <h4>Cheesecake de frutos rojos</h4>
+              <p>Base crujiente, coulis natural</p>
+              <span class="price">Bs. 28</span>
+            </div>
+          </div>
+          <div class="menu-item">
+            <img src="https://images.pexels.com/photos/13925899/pexels-photo-13925899.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Brownie">
+            <div class="menu-item-info">
+              <h4>Brownie de chocolate belga</h4>
+              <p>Con nueces y helado opcional</p>
+              <span class="price">Bs. 20</span>
+            </div>
+          </div>
+          <div class="menu-item">
+            <img src="https://images.pexels.com/photos/6207301/pexels-photo-6207301.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Alfajores">
+            <div class="menu-item-info">
+              <h4>Alfajores de maicena</h4>
+              <p>Dulce de leche, coco rallado</p>
+              <span class="price">Bs. 12 (2 unid)</span>
+            </div>
+          </div>
+        </div>
+        <!-- Snacks -->
+        <div class="menu-category">
+          <h3>Snacks</h3>
+          <div class="menu-item">
+            <img src="https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Tostadas">
+            <div class="menu-item-info">
+              <h4>Tostadas artesanas</h4>
+              <p>Pan de masa madre, aguacate o tomate</p>
+              <span class="price">Bs. 18</span>
+            </div>
+          </div>
+          <div class="menu-item">
+            <img src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Yogur">
+            <div class="menu-item-info">
+              <h4>Bowl de yogur con granola</h4>
+              <p>Frutos rojos, miel, semillas</p>
+              <span class="price">Bs. 22</span>
+            </div>
+          </div>
+          <div class="menu-item">
+            <img src="https://images.pexels.com/photos/357743/pexels-photo-357743.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Sandwich">
+            <div class="menu-item-info">
+              <h4>Sándwich de pavo y queso</h4>
+              <p>Pan integral, vegetales frescos</p>
+              <span class="price">Bs. 24</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<footer>
+  <div class="colophon">
+    <p>© Cafetería UPDS - Menos teoría, más sabor.</p>
+  </div>
+</footer>
+
+<div class="carrito-flotante" id="cart-icon">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+  </svg>
+  <span class="cart-count" id="cart-count">0</span>
+</div>
+
+<script>
+  const header = document.getElementById('main-header');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) header.classList.add('scrolled');
+    else header.classList.remove('scrolled');
+  });
+
+  // Elementos del ciclo de logos
+  const logosWrapper = document.querySelector('.logos-wrapper');
+  const logoFinalDiv = document.querySelector('.logo-final');
+  const logosInstitucionales = document.querySelectorAll('.logo-institucion');
+  
+  // Función para limpiar todas las clases active de los logos institucionales
+  function resetInstitutionalLogos() {
+    logosInstitucionales.forEach(logo => logo.classList.remove('active'));
+  }
+  
+  // Función para mostrar los logos institucionales en secuencia (cada 1 segundo)
+  async function mostrarSecuenciaInstitucional() {
+    return new Promise((resolve) => {
+      let index = 0;
+      // Aseguramos que todos estén reseteados antes de iniciar la secuencia
+      resetInstitutionalLogos();
+      if (logosInstitucionales.length === 0) {
+        resolve();
+        return;
+      }
+      // Activar el primero inmediatamente
+      logosInstitucionales[0].classList.add('active');
+      index = 1;
+      
+      const interval = setInterval(() => {
+        if (index >= logosInstitucionales.length) {
+          clearInterval(interval);
+          resolve();
+          return;
+        }
+        // Desactivar todos y activar el actual
+        resetInstitutionalLogos();
+        logosInstitucionales[index].classList.add('active');
+        index++;
+      }, 1000);
+    });
+  }
+  
+  // Función para mostrar el logo final con animación
+  async function mostrarLogoFinalConAnimacion() {
+    return new Promise((resolve) => {
+      // Ocultar wrapper de logos institucionales y mostrar logo final
+      logosWrapper.style.display = 'none';
+      logoFinalDiv.style.display = 'block';
+      // Forzar reflow para reiniciar animación si es necesario
+      void logoFinalDiv.offsetHeight;
+      // Quitamos y volvemos a agregar la clase para reiniciar la animación
+      logoFinalDiv.classList.remove('animar');
+      // Forzar reflow otra vez para asegurar reinicio
+      void logoFinalDiv.offsetHeight;
+      logoFinalDiv.classList.add('animar');
+      
+      // Tiempo de exposición del logo final: 3.5 segundos (para que se aprecie bien la animación y el texto)
+      setTimeout(() => {
+        resolve();
+      }, 3500);
+    });
+  }
+  
+  // Función para ocultar el logo final y mostrar nuevamente el wrapper de logos
+  function prepararParaNuevoCiclo() {
+    logoFinalDiv.classList.remove('animar');
+    logoFinalDiv.style.display = 'none';
+    logosWrapper.style.display = 'block';
+    // Nos aseguramos de resetear logos para evitar residuos visuales
+    resetInstitutionalLogos();
+    // Forzamos que el primer logo vuelva a estar activo? No, la secuencia se encargará de activar el primero inmediatamente.
+    // Pero para evitar un instante sin ningún logo visible, pondremos el primer logo activo justo antes de iniciar siguiente ciclo.
+    // Esto se hará en la siguiente llamada a mostrarSecuenciaInstitucional, pero por si acaso lo dejamos opaco.
+    // No hay problema ya que la función mostrarSecuenciaInstitucional iniciará con el primero activo.
+  }
+  
+  // Bucle principal infinito
+  async function startLogosInfiniteLoop() {
+    while (true) {
+      // 1. Mostrar secuencia de logos institucionales
+      await mostrarSecuenciaInstitucional();
+      // 2. Mostrar logo final con animación
+      await mostrarLogoFinalConAnimacion();
+      // 3. Preparar el cambio para volver a empezar
+      prepararParaNuevoCiclo();
+      // Pequeña pausa extra para suavizar transición (opcional)
+      await new Promise(r => setTimeout(r, 200));
+    }
+  }
+  
+  // Observador para texto lateral de experiencia
+  const observerTexto = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('reveal-text');
+        observerTexto.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  const textSplitSection = document.querySelector('.textSplit');
+  if (textSplitSection) observerTexto.observe(textSplitSection);
+  
+  // Observador para animar categorías del menú al aparecer
+  const menuCategories = document.querySelectorAll('.menu-category');
+  const menuObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, idx) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('revealed');
+        }, idx * 150);
+        menuObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  menuCategories.forEach(cat => menuObserver.observe(cat));
+  
+  // Iniciar el bucle infinito de logos cuando la página cargue completamente
+  window.addEventListener('load', () => {
+    // Asegurar estado inicial correcto: wrapper visible, logo final oculto, primer logo activo
+    logosWrapper.style.display = 'block';
+    logoFinalDiv.style.display = 'none';
+    logoFinalDiv.classList.remove('animar');
+    resetInstitutionalLogos();
+    // Activamos el primer logo para que no quede vacío
+    if (logosInstitucionales.length > 0) {
+      logosInstitucionales[0].classList.add('active');
+    }
+    // Arrancamos el ciclo después de un breve instante para evitar interferencias con la carga
+    setTimeout(() => {
+      startLogosInfiniteLoop();
+    }, 100);
+  });
+  
+  // Carrito flotante
+  document.getElementById('cart-icon').addEventListener('click', () => {
+    alert('🛒 Carrito de compras - Aquí irían tus productos');
+  });
+</script>
+</body>
+</html>

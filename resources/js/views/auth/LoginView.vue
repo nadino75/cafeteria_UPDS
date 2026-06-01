@@ -1,76 +1,45 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-base px-4">
-    <div class="w-full max-w-md">
-
-      <!-- Marca -->
-      <div class="text-center mb-10">
-        <h1 class="font-display text-5xl text-amber font-semibold tracking-tight">
-          Cafetería
-        </h1>
-        <p class="text-ink-mute text-xs tracking-[0.25em] uppercase mt-1">
-          UPDS · Sistema de Gestión
-        </p>
-      </div>
-
-      <!-- Card -->
-      <div class="bg-card border border-edge rounded-2xl p-8 shadow-2xl">
-        <h2 class="font-display text-2xl text-ink font-medium mb-6">
-          Iniciar sesión
-        </h2>
+  <div class="login-page">
+    <div class="login-overlay">
+      <div class="login-container">
+        <router-link to="/"><img :src="loginImg" alt="Cafetería UPDS"></router-link>
+        <h2>Acceso exclusivo</h2>
+        <p>Ingresa con tu correo y contraseña para gestionar el sistema</p>
 
         <form @submit.prevent="handleLogin" novalidate>
-          <!-- Email -->
-          <div class="mb-4">
-            <label class="block text-ink-mute text-sm mb-1.5">
-              Correo electrónico
-            </label>
+          <div class="input-group">
+            <label>Correo electrónico</label>
             <input
               v-model="form.email"
               type="email"
               required
               autocomplete="email"
-              placeholder="usuario@cafeteria.upds"
-              class="w-full bg-elevated border border-edge rounded-lg px-4 py-3 text-ink placeholder-ink-dim text-sm focus:outline-none focus:border-amber transition-colors"
+              placeholder="tu@upds.com"
             />
           </div>
 
-          <!-- Contraseña -->
-          <div class="mb-6">
-            <label class="block text-ink-mute text-sm mb-1.5">
-              Contraseña
-            </label>
+          <div class="input-group">
+            <label>Contraseña</label>
             <input
               v-model="form.password"
               type="password"
               required
               autocomplete="current-password"
-              placeholder="••••••••"
-              class="w-full bg-elevated border border-edge rounded-lg px-4 py-3 text-ink placeholder-ink-dim text-sm focus:outline-none focus:border-amber transition-colors"
+              placeholder="********"
             />
           </div>
 
-          <!-- Error -->
-          <div
-            v-if="error"
-            class="mb-4 px-4 py-3 bg-err/10 border border-err/30 rounded-lg"
-          >
-            <p class="text-err text-sm">{{ error }}</p>
-          </div>
+          <div v-if="error" class="error-message">{{ error }}</div>
 
-          <!-- Botón -->
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full bg-amber hover:bg-amber-bright text-base font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm tracking-wide"
-          >
-            {{ loading ? 'Ingresando...' : 'Ingresar' }}
+          <button type="submit" :disabled="loading" class="login-btn">
+            {{ loading ? 'Ingresando...' : 'Ingresar al sistema' }}
           </button>
         </form>
-      </div>
 
-      <p class="text-center text-ink-dim text-xs mt-6">
-        ¿Sin acceso? Contacta al administrador del sistema.
-      </p>
+        <p class="register-link">
+          ¿Sin acceso? Contacta al administrador del sistema.
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -83,6 +52,8 @@ import { DASHBOARD_BY_ROL } from '@/router/index.js'
 
 const router = useRouter()
 const auth   = useAuthStore()
+
+const loginImg = '/assets/img/CAFETERIA.svg'
 
 const form    = reactive({ email: '', password: '' })
 const loading = ref(false)
@@ -107,3 +78,141 @@ async function handleLogin() {
   }
 }
 </script>
+
+<style scoped>
+@font-face {
+  font-family: 'Room-205';
+  font-display: swap;
+  src: url('https://onyxcoffeelab.com/cdn/shop/t/31/assets/Room-205.woff2?v=18721117088091669681705351138') format('woff2');
+}
+
+.login-page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  background-image: radial-gradient(circle at 10% 20%, rgba(30,30,30,0.9) 0%, #000000 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.login-overlay {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.login-container {
+  background: rgba(20,20,20,0.9);
+  backdrop-filter: blur(12px);
+  border-radius: 32px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 25px 45px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,197,66,0.2);
+  text-align: center;
+  animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-container img {
+  width: 120px;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 6px #f5c542);
+}
+
+.login-container h2 {
+  color: #f5c542;
+  font-family: 'Room-205', serif;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+
+.login-container > p {
+  color: #ccc;
+  margin-bottom: 2rem;
+  font-size: 0.85rem;
+}
+
+.input-group {
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  color: #ddd;
+  font-size: 0.8rem;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 40px;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.input-group input::placeholder {
+  color: #666;
+}
+
+.input-group input:focus {
+  border-color: #f5c542;
+  box-shadow: 0 0 0 2px rgba(245,197,66,0.3);
+}
+
+.login-btn {
+  width: 100%;
+  background: #f5c542;
+  color: #1a1a1a;
+  border: none;
+  padding: 12px;
+  border-radius: 40px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.login-btn:hover {
+  background: #ffd966;
+  transform: scale(1.02);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.register-link {
+  color: #888;
+  font-size: 0.75rem;
+  margin-top: 1.5rem;
+}
+</style>

@@ -13,6 +13,8 @@ class Menu extends Model
         'descripcion',
         'categoria_id',
         'precio_venta',
+        'tipo',
+        'costo',
         'imagen_url',
         'disponible_desde',
         'disponible_hasta',
@@ -23,9 +25,25 @@ class Menu extends Model
 
     protected $casts = [
         'precio_venta' => 'decimal:2',
+        'costo'        => 'decimal:2',
         'activo'       => 'boolean',
         'created_at'   => 'datetime',
     ];
+
+    public function scopePreparados($q)
+    {
+        return $q->where('tipo', 'preparado');
+    }
+
+    public function scopeDirectos($q)
+    {
+        return $q->where('tipo', 'directo');
+    }
+
+    public function esDirecto(): bool
+    {
+        return $this->tipo === 'directo';
+    }
 
     public function categoria()
     {
