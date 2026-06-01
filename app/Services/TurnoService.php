@@ -24,12 +24,19 @@ class TurnoService
             throw new \RuntimeException('Ya existe un turno abierto para este usuario.');
         }
 
-        return Turno::create([
-            'codigo'          => $this->generarCodigo(),
-            'usuario_apertura'=> $usuarioId,
-            'caja_inicial'    => $cajaInicial,
-            'estado'          => 'abierto',
-        ]);
+        return DB::transaction(function () use ($usuarioId, $cajaInicial) {
+            $turno = Turno::create([
+                'usuario_apertura' => $usuarioId,
+                'caja_inicial'     => $cajaInicial,
+                'estado'           => 'abierto',
+            ]);
+
+            $fecha = now()->format('Ymd');
+            $turno->codigo = "T-{$fecha}-" . str_pad($turno->id, 4, '0', STR_PAD_LEFT);
+            $turno->save();
+
+            return $turno;
+        });
     }
 
     /**
@@ -159,13 +166,5 @@ class TurnoService
                 report($e);
             }
         }
-    }
-
-    private function generarCodigo(): string
-    {
-        $fecha     = now()->format('Ymd');
-        $correlativo = Turno::whereDate('fecha_apertura', today())->count() + 1;
-
-        return "T-{$fecha}-" . str_pad($correlativo, 3, '0', STR_PAD_LEFT);
     }
 }
