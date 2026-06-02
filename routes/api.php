@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ContabilidadController;
 use App\Http\Controllers\Api\GastoOperativoController;
 use App\Http\Controllers\Api\InventarioController;
 use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\PantallaController;
 use App\Http\Controllers\Api\ProductoController;
 use App\Http\Controllers\Api\ProveedorController;
 use App\Http\Controllers\Api\ReporteController;
@@ -27,6 +28,7 @@ Route::prefix('auth')->group(function () {
 // Rutas públicas adicionales
 // ==========================================
 Route::get('menus-publicos', [MenuController::class, 'publicos']);
+Route::get('pantalla/contenido', [PantallaController::class, 'publicos']);
 
 // ==========================================
 // Rutas protegidas (requieren JWT)
@@ -124,4 +126,12 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('cierres-pendientes',   [ContabilidadController::class, 'cierresPendientes']);
         Route::post('ejecutar-cierre',     [ContabilidadController::class, 'ejecutarCierre']);
     });
+
+    // Pantalla
+    Route::get('pantalla', [PantallaController::class, 'index']);
+    Route::post('pantalla', [PantallaController::class, 'store']);
+    Route::put('pantalla/{pantalla}', [PantallaController::class, 'update']);
+    Route::patch('pantalla/{pantalla}/toggle', [PantallaController::class, 'toggle']);
+    Route::post('pantalla/reordenar', [PantallaController::class, 'reordenar']);
+    Route::delete('pantalla/{pantalla}', [PantallaController::class, 'destroy']);
 });
