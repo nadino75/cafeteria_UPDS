@@ -97,6 +97,7 @@ const auth = useAuthStore()
 // ── SVG icons (Heroicons outline) ────────────────────────────────────────────
 const I = {
   grid:     `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>`,
+  display:  `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7" /></svg>`,
   users:    `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg>`,
   tag:      `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" /></svg>`,
   folder:   `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v8.25A2.25 2.25 0 0 0 4.5 16.5h15a2.25 2.25 0 0 0 2.25-2.25V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>`,
@@ -120,6 +121,7 @@ const NAV_CONFIG = {
     { grupo: 'Catálogos',  label: 'Productos',     ruta: '/dashboard/productos',    icono: I.tag },
     {                      label: 'Categorías',    ruta: '/dashboard/categorias',   icono: I.folder },
     {                      label: 'Menús',          ruta: '/dashboard/menus',        icono: I.menu },
+    {                      label: 'Pantalla',       ruta: '/dashboard/pantalla',     icono: I.display },
     { grupo: 'Operaciones',label: 'Inventario',    ruta: '/dashboard/inventario',   icono: I.box },
     {                      label: 'Ventas',         ruta: '/dashboard/ventas',       icono: I.cart },
     {                      label: 'Compras',        ruta: '/dashboard/compras',      icono: I.bag },
@@ -137,6 +139,7 @@ const NAV_CONFIG = {
     { grupo: 'Catálogos', label: 'Productos',    ruta: '/dashboard/productos',    icono: I.tag },
     {                     label: 'Categorías',   ruta: '/dashboard/categorias',   icono: I.folder },
     {                     label: 'Menús',         ruta: '/dashboard/menus',        icono: I.menu },
+    {                     label: 'Pantalla',      ruta: '/dashboard/pantalla',     icono: I.display },
     { grupo: 'Operaciones', label: 'Inventario', ruta: '/dashboard/inventario',   icono: I.box },
     {                     label: 'Ventas',        ruta: '/dashboard/ventas',       icono: I.cart },
     {                     label: 'Compras',       ruta: '/dashboard/compras',      icono: I.bag },
