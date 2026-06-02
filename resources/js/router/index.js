@@ -11,6 +11,11 @@ const routes = [
     meta: { publico: true },
   },
   {
+    path: '/pantalla',
+    component: () => import('@/views/PantallaView.vue'),
+    meta: { publico: true },
+  },
+  {
     path: '/login',
     component: () => import('@/views/auth/LoginView.vue'),
     meta: { publico: true },
@@ -108,6 +113,11 @@ const routes = [
         path: 'inventario',
         component: () => import('@/views/inventario/InventarioView.vue'),
         meta: { rolRequerido: ['Administrador', 'Gerente', 'Almacenista'] },
+      },
+      {
+        path: 'pantalla',
+        component: () => import('@/views/pantalla/PantallaGestionView.vue'),
+        meta: { rolRequerido: ['Administrador', 'Gerente'] },
       },
     ],
   },
