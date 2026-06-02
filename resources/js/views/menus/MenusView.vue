@@ -123,15 +123,14 @@
             </p>
           </div>
 
-          <!-- Producto base (solo directo) -->
+          <!-- Producto base (solo directo, autofill rápido) -->
           <div v-if="form.tipo === 'directo'">
-            <label class="block text-ink-mute text-sm mb-2">Producto base (opcional)</label>
-            <select v-model="productoBaseId" @change="onProductoBaseChange"
+            <label class="block text-ink-mute text-sm mb-2">Copiar de producto (opcional)</label>
+            <select @change="copiarDeProducto($event.target.value)" value=""
               class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber">
-              <option :value="null">Seleccionar producto...</option>
-              <option v-for="p in productos" :key="p.id" :value="p.id">{{ p.nombre }} — Bs. {{ Number(p.precio_venta ?? p.costo_unitario ?? 0).toFixed(2) }}</option>
+              <option value="">—</option>
+              <option v-for="p in productos" :key="p.id" :value="p.id">{{ p.nombre }}</option>
             </select>
-            <p class="text-ink-dim text-xs mt-1">Rellena nombre y precio automáticamente</p>
           </div>
 
           <div>
@@ -155,7 +154,7 @@
           </div>
           <div>
             <label class="block text-ink-mute text-sm mb-1">Categoría</label>
-            <select v-model="form.categoria_id" @change="onCategoriaChange(form.categoria_id)"
+            <select v-model="form.categoria_id"
               class="w-full bg-elevated border border-edge rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-amber">
               <option value="">Sin categoría</option>
               <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre }}</option>
@@ -271,41 +270,24 @@ const modalAbierto = ref(false)
 const modoEdicion  = ref(false)
 const guardando    = ref(false)
 const errorForm    = ref(null)
-const imagenPreview = ref(null)
 const imagenFile   = ref(null)
-const productoBaseId = ref(null)
+const imagenPreview = ref(null)
 
-function onProductoBaseChange() {
-  const p = productos.value.find(x => x.id === productoBaseId.value)
+function copiarDeProducto(id) {
+  if (!id) return
+  const p = productos.value.find(x => x.id === Number(id))
   if (!p) return
   form.value.nombre = p.nombre
   const precio = p.precio_venta ?? p.costo_unitario ?? 0
-  if (!form.value.precio_venta) form.value.precio_venta = Number(precio)
-  if (!form.value.costo) form.value.costo = Number(p.costo_unitario ?? 0)
+  form.value.precio_venta = Number(precio)
+  form.value.costo = Number(p.costo_unitario ?? 0)
 }
-const form         = ref({
-  nombre: '',
-  descripcion: '',
-  categoria_id: '',
-  precio_venta: null,
-  tipo: 'preparado',
-  costo: null,
-  imagen_url: '',
-  disponible_desde: '',
-  disponible_hasta: '',
-  ingredientes: [],
+
+const form = ref({
+  nombre: '', descripcion: '', categoria_id: '', precio_venta: null,
+  tipo: 'preparado', costo: null, imagen_url: '',
+  disponible_desde: '', disponible_hasta: '', ingredientes: [],
 })
-
-// Categorías que por defecto sugieren tipo "directo"
-const CATEGORIAS_DIRECTO = ['Repostería', 'Alimentos']
-
-function onCategoriaChange(catId) {
-  if (modoEdicion.value) return
-  const cat = categorias.value.find(c => c.id === catId)
-  if (cat && CATEGORIAS_DIRECTO.includes(cat.nombre)) {
-    form.value.tipo = 'directo'
-  }
-}
 
 function agregarIngrediente() {
   form.value.ingredientes.push({ producto_id: '', cantidad: null, unidad_medida: '' })
@@ -313,7 +295,8 @@ function agregarIngrediente() {
 
 function abrirModal(menu = null) {
   errorForm.value = null
-  productoBaseId.value = null
+  imagenFile.value = null
+  imagenPreview.value = null
   if (menu) {
     modoEdicion.value = true
     form.value = {
@@ -343,9 +326,8 @@ function abrirModal(menu = null) {
 function cerrarModal() {
   modalAbierto.value = false
   errorForm.value = null
-  imagenPreview.value = null
   imagenFile.value = null
-  productoBaseId.value = null
+  imagenPreview.value = null
 }
 
 function onImagenFileChange(e) {
@@ -361,14 +343,13 @@ async function guardar() {
   guardando.value = true; errorForm.value = null
   try {
     const hasFile = imagenFile.value !== null
-    const raw = { ...form.value }
-    // Convertir vacíos a null para campos opcionales
-    ;['categoria_id', 'descripcion', 'imagen_url', 'disponible_desde', 'disponible_hasta'].forEach(k => {
-      if (raw[k] === '') raw[k] = null
-    })
-    const payload = hasFile ? buildFormData() : raw
-    const config  = hasFile ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
-
+    const payload = hasFile ? buildFormData() : { ...form.value }
+    if (!hasFile) {
+      ;['categoria_id', 'descripcion', 'imagen_url', 'disponible_desde', 'disponible_hasta'].forEach(k => {
+        if (payload[k] === '') payload[k] = null
+      })
+    }
+    const config = hasFile ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
     if (modoEdicion.value) {
       if (hasFile) {
         payload.append('_method', 'PUT')

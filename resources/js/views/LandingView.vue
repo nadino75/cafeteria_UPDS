@@ -60,85 +60,17 @@
         </video>
         <div class="container">
           <h2>Nuestro Menú</h2>
-          <div class="menu-categories">
-            <div class="menu-category">
-              <h3>Cafés</h3>
-              <div class="menu-item">
-                <img src="https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Espresso">
+          <div v-if="cargandoMenu" class="text-center text-ink-dim py-8">Cargando menú...</div>
+          <div v-else class="menu-categories">
+            <div v-for="cat in menuCategorias" :key="cat.nombre" class="menu-category">
+              <h3>{{ cat.nombre }}</h3>
+              <div v-for="item in cat.items" :key="item.id" class="menu-item" :class="{ 'sin-stock': stockFaltante(item) }">
+                <img :src="item.imagen_url || '/assets/img/placeholder-food.svg'" :alt="item.nombre" @error="$event.target.src='/assets/img/placeholder-food.svg'">
                 <div class="menu-item-info">
-                  <h4>Espresso Italiano</h4>
-                  <p>Intenso, cremoso, 100% arábica</p>
-                  <span class="price">Bs. 15</span>
-                </div>
-              </div>
-              <div class="menu-item">
-                <img src="https://images.pexels.com/photos/2507047/pexels-photo-2507047.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Latte">
-                <div class="menu-item-info">
-                  <h4>Latte con Arte</h4>
-                  <p>Leche vaporizada, arte latte incluido</p>
-                  <span class="price">Bs. 22</span>
-                </div>
-              </div>
-              <div class="menu-item">
-                <img src="https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Cold Brew">
-                <div class="menu-item-info">
-                  <h4>Cold Brew de especialidad</h4>
-                  <p>12h de extracción en frío, notas a chocolate</p>
-                  <span class="price">Bs. 25</span>
-                </div>
-              </div>
-            </div>
-            <div class="menu-category">
-              <h3>Postres</h3>
-              <div class="menu-item">
-                <img src="https://images.pexels.com/photos/1126359/pexels-photo-1126359.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Cheesecake">
-                <div class="menu-item-info">
-                  <h4>Cheesecake de frutos rojos</h4>
-                  <p>Base crujiente, coulis natural</p>
-                  <span class="price">Bs. 28</span>
-                </div>
-              </div>
-              <div class="menu-item">
-                <img src="https://images.pexels.com/photos/13925899/pexels-photo-13925899.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Brownie">
-                <div class="menu-item-info">
-                  <h4>Brownie de chocolate belga</h4>
-                  <p>Con nueces y helado opcional</p>
-                  <span class="price">Bs. 20</span>
-                </div>
-              </div>
-              <div class="menu-item">
-                <img src="https://images.pexels.com/photos/6207301/pexels-photo-6207301.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Alfajores">
-                <div class="menu-item-info">
-                  <h4>Alfajores de maicena</h4>
-                  <p>Dulce de leche, coco rallado</p>
-                  <span class="price">Bs. 12 (2 unid)</span>
-                </div>
-              </div>
-            </div>
-            <div class="menu-category">
-              <h3>Snacks</h3>
-              <div class="menu-item">
-                <img src="https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Tostadas">
-                <div class="menu-item-info">
-                  <h4>Tostadas artesanas</h4>
-                  <p>Pan de masa madre, aguacate o tomate</p>
-                  <span class="price">Bs. 18</span>
-                </div>
-              </div>
-              <div class="menu-item">
-                <img src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Yogur">
-                <div class="menu-item-info">
-                  <h4>Bowl de yogur con granola</h4>
-                  <p>Frutos rojos, miel, semillas</p>
-                  <span class="price">Bs. 22</span>
-                </div>
-              </div>
-              <div class="menu-item">
-                <img src="https://images.pexels.com/photos/357743/pexels-photo-357743.jpeg?auto=compress&cs=tinysrgb&w=120" alt="Sandwich">
-                <div class="menu-item-info">
-                  <h4>Sándwich de pavo y queso</h4>
-                  <p>Pan integral, vegetales frescos</p>
-                  <span class="price">Bs. 24</span>
+                  <h4>{{ item.nombre }}</h4>
+                  <p>{{ item.descripcion || '' }}</p>
+                  <span v-if="!stockFaltante(item)" class="price">Bs. {{ Number(item.precio_venta).toFixed(0) }}</span>
+                  <span v-else class="sin-stock-label">Stock insuficiente para "{{ stockFaltante(item) }}".</span>
                 </div>
               </div>
             </div>
@@ -215,19 +147,53 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
 const BASE = '/landing'
 const img = (f) => `${BASE}/imagenes/${f}`
 const vid = (f) => `${BASE}/videos/${f}`
 
+const menuCategorias = ref([])
+const cargandoMenu = ref(true)
+
 onMounted(() => {
   initLanding()
+  cargarMenu()
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
+
+async function cargarMenu() {
+  try {
+    const res = await fetch('/api/menus-publicos')
+    const body = await res.json()
+    const menus = body.data ?? []
+    const agrupados = {}
+    for (const m of menus) {
+      const cat = m.categoria?.nombre ?? 'Otros'
+      if (!agrupados[cat]) agrupados[cat] = []
+      agrupados[cat].push(m)
+    }
+    menuCategorias.value = Object.entries(agrupados).map(([nombre, items]) => ({ nombre, items }))
+    await nextTick()
+    observarMenuCategorias()
+  } catch (e) {
+    console.error('Error al cargar menú:', e)
+  } finally {
+    cargandoMenu.value = false
+  }
+}
+
+function stockFaltante(item) {
+  if (item.tipo !== 'preparado' || !item.ingredientes?.length) return null
+  for (const ing of item.ingredientes) {
+    const porciones = Math.floor(Number(ing.producto.stock_actual) / Number(ing.cantidad))
+    if (porciones < 1) return ing.producto.nombre
+  }
+  return null
+}
 
 function initLanding() {
   window.addEventListener('scroll', handleScroll)
@@ -281,6 +247,10 @@ function initLanding() {
     obs.observe(textSplit)
   }
 
+  observarMenuCategorias()
+}
+
+function observarMenuCategorias() {
   const menuCategories = document.querySelectorAll('.menu-category')
   if (menuCategories.length) {
     const menuObs = new IntersectionObserver((entries) => {
@@ -516,6 +486,8 @@ function delay(ms) {
 .landing .menu-item-info h4 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.2rem; color: white; }
 .landing .menu-item-info p { font-size: 0.85rem; color: #ddd; margin-bottom: 0.3rem; }
 .landing .menu-item-info .price { font-weight: 700; color: #f5c542; }
+.landing .menu-item.sin-stock { opacity: 0.5; filter: grayscale(0.6); }
+.landing .menu-item .sin-stock-label { font-size: 0.75rem; color: #ff6b6b; font-weight: 600; display: inline-block; background: rgba(255,80,80,0.15); padding: 0.15rem 0.5rem; border-radius: 8px; }
 
 .landing .doubleSplit { padding: 5rem 0; background: #e8e4da; color: #1a1a1a; }
 .landing .doubleSplit .container { display: flex; flex-wrap: wrap; gap: 2rem; }

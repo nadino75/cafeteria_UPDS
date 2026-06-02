@@ -24,6 +24,11 @@ Route::prefix('auth')->group(function () {
 });
 
 // ==========================================
+// Rutas públicas adicionales
+// ==========================================
+Route::get('menus-publicos', [MenuController::class, 'publicos']);
+
+// ==========================================
 // Rutas protegidas (requieren JWT)
 // ==========================================
 // ⚠️  TEMPORAL: Middlewares de permisos comentados

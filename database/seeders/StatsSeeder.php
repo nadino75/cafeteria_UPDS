@@ -42,20 +42,30 @@ class StatsSeeder extends Seeder
         $existentes = DB::table('productos')->pluck('id', 'codigo');
 
         $nuevos = [
-            // Productos de venta directa
-            ['nombre' => 'Galleta de avena',         'codigo' => 'ALI-001', 'categoria_id' => $cats['Alimentos'] ?? null,            'precio_venta' => 3.50,  'costo_unitario' => 1.20, 'stock_actual' => 0,   'stock_minimo' => 20,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
-            ['nombre' => 'Empanada de queso',         'codigo' => 'ALI-002', 'categoria_id' => $cats['Alimentos'] ?? null,            'precio_venta' => 7.00,  'costo_unitario' => 3.00, 'stock_actual' => 2,   'stock_minimo' => 15,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
-            ['nombre' => 'Pastel de chocolate',       'codigo' => 'ALI-003', 'categoria_id' => $cats['Repostería'] ?? null,           'precio_venta' => 12.00, 'costo_unitario' => 5.50, 'stock_actual' => 1,   'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
-            ['nombre' => 'Sandwich mixto',            'codigo' => 'ALI-004', 'categoria_id' => $cats['Alimentos'] ?? null,            'precio_venta' => 15.00, 'costo_unitario' => 6.00, 'stock_actual' => 3,   'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
-            ['nombre' => 'Jugo natural de naranja',   'codigo' => 'BEB-003', 'categoria_id' => $cats['Bebidas Frías'] ?? null,        'precio_venta' => 10.00, 'costo_unitario' => 3.00, 'stock_actual' => 5,   'stock_minimo' => 8,   'unidad_medida' => 'lt',    'requiere_lote' => false],
-            ['nombre' => 'Te de coca',                'codigo' => 'BEB-004', 'categoria_id' => $cats['Bebidas Calientes'] ?? null,    'precio_venta' => 8.00,  'costo_unitario' => 1.50, 'stock_actual' => 50,  'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
-            // Más insumos
-            ['nombre' => 'Mantequilla',               'codigo' => 'INS-006', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 15.00,'stock_actual' => 1,   'stock_minimo' => 5,   'unidad_medida' => 'kg',    'requiere_lote' => true],
-            ['nombre' => 'Huevos',                    'codigo' => 'INS-007', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 0.80, 'stock_actual' => 6,   'stock_minimo' => 24,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
-            ['nombre' => 'Queso crema',               'codigo' => 'INS-008', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 22.00,'stock_actual' => 2,   'stock_minimo' => 3,   'unidad_medida' => 'kg',    'requiere_lote' => true],
-            ['nombre' => 'Pan de molde',              'codigo' => 'INS-009', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 5.00, 'stock_actual' => 4,   'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
-            ['nombre' => 'Canela en polvo',           'codigo' => 'INS-010', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 18.00,'stock_actual' => 0,   'stock_minimo' => 2,   'unidad_medida' => 'kg',    'requiere_lote' => false],
-            ['nombre' => 'Café molido premium',       'codigo' => 'INS-011', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 25.00,'stock_actual' => 0,   'stock_minimo' => 8,   'unidad_medida' => 'kg',    'requiere_lote' => true],
+            // Productos de venta directa — precios Bolivia 2026
+            ['nombre' => 'Galleta de avena',         'codigo' => 'ALI-001', 'categoria_id' => $cats['Alimentos'] ?? null,            'precio_venta' => 3.00,  'costo_unitario' => 1.00, 'stock_actual' => 0,   'stock_minimo' => 20,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Empanada de queso',         'codigo' => 'ALI-002', 'categoria_id' => $cats['Alimentos'] ?? null,            'precio_venta' => 6.00,  'costo_unitario' => 2.50, 'stock_actual' => 2,   'stock_minimo' => 15,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Pastel de chocolate',       'codigo' => 'ALI-003', 'categoria_id' => $cats['Repostería'] ?? null,           'precio_venta' => 10.00, 'costo_unitario' => 4.00, 'stock_actual' => 1,   'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Sandwich mixto',            'codigo' => 'ALI-004', 'categoria_id' => $cats['Alimentos'] ?? null,            'precio_venta' => 12.00, 'costo_unitario' => 5.00, 'stock_actual' => 3,   'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Jugo natural de naranja',   'codigo' => 'BEB-003', 'categoria_id' => $cats['Bebidas Frías'] ?? null,        'precio_venta' => 8.00,  'costo_unitario' => 2.00, 'stock_actual' => 5,   'stock_minimo' => 8,   'unidad_medida' => 'lt',    'requiere_lote' => false],
+            ['nombre' => 'Te de coca',                'codigo' => 'BEB-004', 'categoria_id' => $cats['Bebidas Calientes'] ?? null,    'precio_venta' => 5.00,  'costo_unitario' => 1.00, 'stock_actual' => 50,  'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            // Más insumos — costos Bolivia
+            ['nombre' => 'Mantequilla',               'codigo' => 'INS-006', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 25.00,'stock_actual' => 1,   'stock_minimo' => 5,   'unidad_medida' => 'kg',    'requiere_lote' => true],
+            ['nombre' => 'Huevos',                    'codigo' => 'INS-007', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 1.20, 'stock_actual' => 6,   'stock_minimo' => 24,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Queso crema',               'codigo' => 'INS-008', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 35.00,'stock_actual' => 2,   'stock_minimo' => 3,   'unidad_medida' => 'kg',    'requiere_lote' => true],
+            ['nombre' => 'Pan de molde',              'codigo' => 'INS-009', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 8.00, 'stock_actual' => 4,   'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Canela en polvo',           'codigo' => 'INS-010', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 30.00,'stock_actual' => 0,   'stock_minimo' => 2,   'unidad_medida' => 'kg',    'requiere_lote' => false],
+            ['nombre' => 'Café molido premium',       'codigo' => 'INS-011', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 80.00,'stock_actual' => 0,   'stock_minimo' => 8,   'unidad_medida' => 'kg',    'requiere_lote' => true],
+            // Nuevos insumos (coinciden con DemoSeeder)
+            ['nombre' => 'Canela entera',              'codigo' => 'INS-012', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 30.00,'stock_actual' => 3,   'stock_minimo' => 3,   'unidad_medida' => 'kg',    'requiere_lote' => false],
+            ['nombre' => 'Té de coca en hojas',        'codigo' => 'INS-013', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 20.00,'stock_actual' => 8,   'stock_minimo' => 5,   'unidad_medida' => 'kg',    'requiere_lote' => false],
+            ['nombre' => 'Esencia de vainilla',        'codigo' => 'INS-014', 'categoria_id' => $cats['Insumos / Materia Prima'] ?? null, 'precio_venta' => 0,   'costo_unitario' => 50.00,'stock_actual' => 2,   'stock_minimo' => 2,   'unidad_medida' => 'lt',    'requiere_lote' => false],
+            // Nuevos productos directos (coinciden con DemoSeeder)
+            ['nombre' => 'Salteña',                    'codigo' => 'ALI-005', 'categoria_id' => $cats['Alimentos'] ?? null,              'precio_venta' => 8.00, 'costo_unitario' => 4.00, 'stock_actual' => 8,   'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Muffin de arándanos',        'codigo' => 'ALI-006', 'categoria_id' => $cats['Repostería'] ?? null,             'precio_venta' => 7.00, 'costo_unitario' => 3.00, 'stock_actual' => 5,   'stock_minimo' => 8,   'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Té negro en bolsas',         'codigo' => 'BEB-005', 'categoria_id' => $cats['Bebidas Calientes'] ?? null,      'precio_venta' => 4.00, 'costo_unitario' => 1.50, 'stock_actual' => 30,  'stock_minimo' => 10,  'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Gaseosa personal',           'codigo' => 'BEB-006', 'categoria_id' => $cats['Bebidas Frías'] ?? null,          'precio_venta' => 5.00, 'costo_unitario' => 3.50, 'stock_actual' => 20,  'stock_minimo' => 8,   'unidad_medida' => 'unidad', 'requiere_lote' => false],
+            ['nombre' => 'Api (mate de maíz morado)',  'codigo' => 'BEB-007', 'categoria_id' => $cats['Bebidas Calientes'] ?? null,      'precio_venta' => 7.00, 'costo_unitario' => 3.00, 'stock_actual' => 10,  'stock_minimo' => 8,   'unidad_medida' => 'unidad', 'requiere_lote' => false],
         ];
 
         foreach ($nuevos as $p) {
@@ -78,23 +88,23 @@ class StatsSeeder extends Seeder
 
         $lotes = [
             // Vencidos
-            ['codigo' => 'INS-006', 'cantidad' => 1, 'costo' => 15.00, 'dias_entrada' => -20, 'dias_vencimiento' => -2, 'lote' => 'MANT-ENE'],
-            ['codigo' => 'INS-001', 'cantidad' => 2, 'costo' => 8.50,  'dias_entrada' => -35, 'dias_vencimiento' => -1, 'lote' => 'CAFE-DIC'],
+            ['codigo' => 'INS-006', 'cantidad' => 1, 'costo' => 25.00, 'dias_entrada' => -20, 'dias_vencimiento' => -2, 'lote' => 'MANT-ENE'],
+            ['codigo' => 'INS-001', 'cantidad' => 2, 'costo' => 65.00, 'dias_entrada' => -35, 'dias_vencimiento' => -1, 'lote' => 'CAFE-DIC'],
             // Vencen HOY
-            ['codigo' => 'INS-008', 'cantidad' => 1, 'costo' => 22.00, 'dias_entrada' => -7,  'dias_vencimiento' => 0,  'lote' => 'QCR-2024-01'],
-            ['codigo' => 'INS-002', 'cantidad' => 2, 'costo' => 4.20,  'dias_entrada' => -4,  'dias_vencimiento' => 0,  'lote' => 'LECHE-JUN'],
+            ['codigo' => 'INS-008', 'cantidad' => 1, 'costo' => 35.00, 'dias_entrada' => -7,  'dias_vencimiento' => 0,  'lote' => 'QCR-2024-01'],
+            ['codigo' => 'INS-002', 'cantidad' => 2, 'costo' => 8.00,  'dias_entrada' => -4,  'dias_vencimiento' => 0,  'lote' => 'LECHE-JUN'],
             // Vencen en 1-2 días
-            ['codigo' => 'INS-001', 'cantidad' => 1, 'costo' => 8.50,  'dias_entrada' => -28, 'dias_vencimiento' => 1,  'lote' => 'CAFE-2024-002'],
-            ['codigo' => 'INS-002', 'cantidad' => 3, 'costo' => 4.20,  'dias_entrada' => -3,  'dias_vencimiento' => 2,  'lote' => 'LECHE-JUL'],
+            ['codigo' => 'INS-001', 'cantidad' => 1, 'costo' => 65.00, 'dias_entrada' => -28, 'dias_vencimiento' => 1,  'lote' => 'CAFE-2024-002'],
+            ['codigo' => 'INS-002', 'cantidad' => 3, 'costo' => 8.00,  'dias_entrada' => -3,  'dias_vencimiento' => 2,  'lote' => 'LECHE-JUL'],
             // Vencen en 5-7 días
-            ['codigo' => 'INS-006', 'cantidad' => 1, 'costo' => 15.00, 'dias_entrada' => -15, 'dias_vencimiento' => 5,  'lote' => 'MANT-FEB'],
-            ['codigo' => 'INS-008', 'cantidad' => 1, 'costo' => 22.00, 'dias_entrada' => -5,  'dias_vencimiento' => 7,  'lote' => 'QCR-2024-02'],
+            ['codigo' => 'INS-006', 'cantidad' => 1, 'costo' => 25.00, 'dias_entrada' => -15, 'dias_vencimiento' => 5,  'lote' => 'MANT-FEB'],
+            ['codigo' => 'INS-008', 'cantidad' => 1, 'costo' => 35.00, 'dias_entrada' => -5,  'dias_vencimiento' => 7,  'lote' => 'QCR-2024-02'],
             // Vigentes
-            ['codigo' => 'INS-001', 'cantidad' => 3, 'costo' => 8.50,  'dias_entrada' => -2,  'dias_vencimiento' => 60, 'lote' => 'CAFE-NVO'],
-            ['codigo' => 'INS-002', 'cantidad' => 5, 'costo' => 4.00,  'dias_entrada' => -1,  'dias_vencimiento' => 14, 'lote' => 'LECHE-AGO'],
-            ['codigo' => 'INS-005', 'cantidad' => 10,'costo' => 12.00, 'dias_entrada' => -10, 'dias_vencimiento' => 180,'lote' => 'CHOC-2024'],
+            ['codigo' => 'INS-001', 'cantidad' => 3, 'costo' => 65.00, 'dias_entrada' => -2,  'dias_vencimiento' => 60, 'lote' => 'CAFE-NVO'],
+            ['codigo' => 'INS-002', 'cantidad' => 5, 'costo' => 8.00,  'dias_entrada' => -1,  'dias_vencimiento' => 14, 'lote' => 'LECHE-AGO'],
+            ['codigo' => 'INS-005', 'cantidad' => 10,'costo' => 40.00, 'dias_entrada' => -10, 'dias_vencimiento' => 180,'lote' => 'CHOC-2024'],
             ['codigo' => 'BEB-001', 'cantidad' => 24,'costo' => 2.50,  'dias_entrada' => -5,  'dias_vencimiento' => 365,'lote' => 'AGUA-2024-089'],
-            ['codigo' => 'BEB-002', 'cantidad' => 12,'costo' => 4.50,  'dias_entrada' => -3,  'dias_vencimiento' => 180,'lote' => 'REFR-2024'],
+            ['codigo' => 'BEB-002', 'cantidad' => 12,'costo' => 4.00,  'dias_entrada' => -3,  'dias_vencimiento' => 180,'lote' => 'REFR-2024'],
         ];
 
         $now = Carbon::now();
@@ -161,23 +171,30 @@ class StatsSeeder extends Seeder
     private function seedTurnosYVentas(): void
     {
         $this->users    = DB::table('usuarios')->pluck('id', 'email')->toArray();
-        $cajeroId       = $this->users['cajero@cafeteria.upds'] ?? null;
         $adminId        = $this->users['admin@cafeteria.upds'] ?? 1;
         $gerenteId      = $this->users['gerente@cafeteria.upds'] ?? $adminId;
-        if (!$cajeroId) { $this->command->warn('  ⚠ Cajero no encontrado, ejecuta DemoSeeder primero'); return; }
+
+        // Obtener todos los cajeros reales de la BD
+        $rolCajero = DB::table('roles')->where('nombre', 'Cajero')->value('id');
+        $cajeros   = DB::table('usuarios')->where('rol_id', $rolCajero)->where('activo', true)->pluck('id')->toArray();
+        if (empty($cajeros)) {
+            $this->command->warn('  ⚠ No hay cajeros en la BD, ejecuta DemoSeeder primero');
+            return;
+        }
+        $this->command->line('  ✓ Cajeros encontrados: ' . implode(', ', $cajeros));
 
         $this->productos = DB::table('productos')->pluck('id', 'codigo')->toArray();
         $this->menus     = DB::table('menus')->pluck('id', 'nombre')->toArray();
         $this->clientes  = DB::table('clientes')->pluck('id', 'nombre')->toArray();
 
         $metodosPago = ['efectivo', 'efectivo', 'efectivo', 'tarjeta', 'tarjeta', 'transferencia'];
-        $nombresMenus = ['Café americano', 'Café con leche', 'Chocolate caliente', 'Croissant de mantequilla', 'Combo mañana'];
+        $nombresMenus = ['Café americano', 'Café con leche', 'Chocolate caliente', 'Croissant de mantequilla', 'Combo mañana', 'Capuchino', 'Mocachino', 'Api con pastel', 'Salteña de carne'];
         $nombresClientes = array_keys($this->clientes);
 
         $now = Carbon::now();
 
-        // Crear turnos y ventas para cada día de los últimos 30 días
-        for ($dia = 30; $dia >= 0; $dia--) {
+        // Crear turnos y ventas para los últimos 90 días (~3 meses)
+        for ($dia = 90; $dia >= 0; $dia--) {
             $fecha = (clone $now)->subDays($dia);
             $esHoy = $dia === 0;
 
@@ -191,7 +208,7 @@ class StatsSeeder extends Seeder
             for ($t = 0; $t < $numTurnos; $t++) {
                 $horaApertura = (clone $fecha)->setTime(6 + rand(0, 2), rand(0, 59));
                 $horaCierre   = $esHoy ? null : (clone $horaApertura)->addHours(6 + rand(0, 4));
-                $usuarioTurno  = rand(0, 3) > 0 ? $cajeroId : $gerenteId;
+                $usuarioTurno  = rand(0, 3) > 0 ? $cajeros[array_rand($cajeros)] : $gerenteId;
 
                 $turnoId = DB::table('turnos')->insertGetId([
                     'codigo'              => 'T-' . $fecha->format('Ymd') . '-' . str_pad((string)($t + 1), 2, '0', STR_PAD_LEFT),
@@ -222,14 +239,14 @@ class StatsSeeder extends Seeder
             $horaApertura = (clone $now)->subHours(2)->setMinute(rand(0, 59));
             DB::table('turnos')->insert([
                 'codigo'           => 'T-' . $now->format('Ymd') . '-99',
-                'usuario_apertura' => $cajeroId,
+                'usuario_apertura' => $cajeros[array_rand($cajeros)],
                 'fecha_apertura'   => $horaApertura,
                 'caja_inicial'     => 200.00,
                 'estado'           => 'abierto',
             ]);
         }
 
-        $this->command->line('  ✓ Turnos y ventas creados (30 días de historia)');
+        $this->command->line('  ✓ Turnos y ventas creados (90 días / ~3 meses de historia)');
     }
 
     private function crearVenta(int $turnoId, int $usuarioId, Carbon $horaApertura, ?Carbon $horaCierre, array $metodosPago, array $nombresMenus, array $nombresClientes, bool $esHoy): void
@@ -342,7 +359,7 @@ class StatsSeeder extends Seeder
         // Crear gastos adicionales para días pasados
         $categoriasGasto = ['servicios', 'mantenimiento', 'insumos', 'otros'];
 
-        for ($dia = 30; $dia >= 0; $dia--) {
+        for ($dia = 90; $dia >= 0; $dia--) {
             $fecha = (clone $now)->subDays($dia);
             $fechaStr = $fecha->toDateString();
 
@@ -442,16 +459,16 @@ class StatsSeeder extends Seeder
             DB::table('turnos')->whereDate('fecha_apertura', $c->fecha)->update(['cierre_diario_id' => $c->id]);
         }
 
-        $this->command->line('  ✓ Cierres diarios, balances y vinculación de turnos (30 días)');
+        $this->command->line('  ✓ Cierres diarios, balances y vinculación de turnos (90 días)');
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // REPORTE MENSUAL — mes actual y anterior
+    // REPORTE MENSUAL — últimos 4 meses
     // ═══════════════════════════════════════════════════════════════════════════
     private function seedReporteMensual(): void
     {
         $now = Carbon::now();
-        foreach ([0, 1] as $offset) {
+        foreach (range(0, 3) as $offset) {
             $fecha = (clone $now)->subMonths($offset);
             $anio = (int)$fecha->format('Y');
             $mes = (int)$fecha->format('m');
@@ -495,6 +512,6 @@ class StatsSeeder extends Seeder
             ]);
         }
 
-        $this->command->line('  ✓ Reportes mensuales creados (mes actual y anterior)');
+        $this->command->line('  ✓ Reportes mensuales creados (últimos 4 meses)');
     }
 }

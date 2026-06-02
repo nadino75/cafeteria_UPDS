@@ -152,6 +152,29 @@ class MenuController extends Controller
         ]);
     }
 
+    public function publicos(): JsonResponse
+    {
+        $now = now()->format('H:i');
+
+        $menus = Menu::with(['categoria:id,nombre', 'ingredientes.producto:id,nombre,stock_actual'])
+            ->where('activo', true)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('disponible_desde')
+                  ->orWhere('disponible_desde', '<=', $now);
+            })
+            ->where(function ($q) use ($now) {
+                $q->whereNull('disponible_hasta')
+                  ->orWhere('disponible_hasta', '>=', $now);
+            })
+            ->orderBy('nombre')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $menus,
+        ]);
+    }
+
     public function destroy(Menu $menu): JsonResponse
     {
         $menu->update(['activo' => false]);

@@ -1,7 +1,7 @@
 <template>
   <button @click="$emit('click')"
     class="group flex flex-col bg-card border border-edge hover:border-amber/40 hover:bg-amber/[0.03] rounded-xl overflow-hidden transition-all duration-200 cursor-pointer text-left">
-    <div class="w-full aspect-[4/3] bg-elevated overflow-hidden">
+    <div class="w-full aspect-[4/3] bg-elevated overflow-hidden relative">
       <img v-if="menu.imagen_url" :src="menu.imagen_url" :alt="menu.nombre"
         class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
         loading="lazy" @error="onImgError" />
@@ -14,14 +14,30 @@
     </div>
     <div class="p-3 flex flex-col gap-0.5">
       <p class="text-ink text-sm font-medium leading-tight truncate">{{ menu.nombre }}</p>
-      <p class="text-amber font-mono text-xs">Bs. {{ Number(menu.precio_venta).toFixed(2) }}</p>
+      <div class="flex items-center justify-between">
+        <span class="text-amber font-mono text-xs">Bs. {{ Number(menu.precio_venta).toFixed(2) }}</span>
+        <span v-if="porciones !== null"
+          class="text-[10px] font-bold px-1.5 py-0.5 rounded leading-tight"
+          :class="porciones > 0 ? 'bg-ok/15 text-ok' : 'bg-err/15 text-err'">
+          {{ porciones }}
+        </span>
+      </div>
     </div>
   </button>
 </template>
 
 <script setup>
-defineProps({ menu: { type: Object, required: true } })
+import { computed } from 'vue'
+
+const props = defineProps({ menu: { type: Object, required: true } })
 defineEmits(['click'])
+
+const porciones = computed(() => {
+  if (props.menu.tipo !== 'preparado' || !props.menu.ingredientes?.length) return null
+  return Math.min(...props.menu.ingredientes.map(i =>
+    Math.floor((i.producto?.stock_actual ?? 0) / i.cantidad)
+  ))
+})
 
 function onImgError(e) {
   e.target.style.display = 'none'
