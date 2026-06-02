@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ContenidoPantalla;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -45,15 +46,15 @@ class PantallaController extends Controller
 
         $archivo = $request->file('archivo');
         $extension = $archivo->getClientOriginalExtension();
-        $nombre = time() . '_' . Str::slug($request->titulo) . '.' . $extension;
-        $ruta = $archivo->storeAs('public/pantalla', $nombre);
+        $nombre = uniqid() . '_' . Str::slug($request->titulo) . '.' . $extension;
+        $ruta = $archivo->storeAs('pantalla', $nombre, 'public');
 
         $maxOrden = ContenidoPantalla::max('orden') ?? 0;
 
         $contenido = ContenidoPantalla::create([
             'titulo'           => $request->titulo,
             'tipo'             => $request->tipo,
-            'archivo_url'      => Storage::url($ruta),
+            'archivo_url'      => Storage::disk('public')->url($ruta),
             'duracion_segundos' => $request->duracion_segundos,
             'orden'            => $maxOrden + 1,
         ]);
@@ -99,11 +100,13 @@ class PantallaController extends Controller
             'ordenes.*.orden' => 'required|integer|min:0',
         ]);
 
-        foreach ($request->ordenes as $item) {
-            ContenidoPantalla::where('id', $item['id'])->update(['orden' => $item['orden']]);
-        }
+        DB::transaction(function () use ($request) {
+            foreach ($request->ordenes as $item) {
+                ContenidoPantalla::where('id', $item['id'])->update(['orden' => $item['orden']]);
+            }
+        });
 
-        return response()->json(['message' => 'Orden actualizado']);
+        return response()->noContent();
     }
 
     /**
@@ -111,13 +114,14 @@ class PantallaController extends Controller
      */
     public function destroy(ContenidoPantalla $pantalla)
     {
-        $pathRel = str_replace(Storage::url(''), '', $pantalla->archivo_url);
-        if ($pathRel && Storage::exists($pathRel)) {
-            Storage::delete($pathRel);
+        $baseUrl = Storage::disk('public')->url('');
+        $pathRel = str_replace($baseUrl, '', $pantalla->archivo_url);
+        if ($pathRel && $pathRel !== $pantalla->archivo_url && Storage::disk('public')->exists($pathRel)) {
+            Storage::disk('public')->delete($pathRel);
         }
 
         $pantalla->delete();
 
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }
