@@ -54,7 +54,7 @@ class PantallaController extends Controller
         $contenido = ContenidoPantalla::create([
             'titulo'           => $request->titulo,
             'tipo'             => $request->tipo,
-            'archivo_url'      => Storage::disk('public')->url($ruta),
+            'archivo_url'      => '/storage/' . $ruta,
             'duracion_segundos' => $request->duracion_segundos,
             'orden'            => $maxOrden + 1,
         ]);
@@ -114,9 +114,8 @@ class PantallaController extends Controller
      */
     public function destroy(ContenidoPantalla $pantalla)
     {
-        $baseUrl = Storage::disk('public')->url('');
-        $pathRel = str_replace($baseUrl, '', $pantalla->archivo_url);
-        if ($pathRel && $pathRel !== $pantalla->archivo_url && Storage::disk('public')->exists($pathRel)) {
+        $pathRel = Str::after($pantalla->archivo_url, '/storage/');
+        if ($pathRel && Storage::disk('public')->exists($pathRel)) {
             Storage::disk('public')->delete($pathRel);
         }
 
