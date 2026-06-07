@@ -53,7 +53,7 @@ class MenuController extends Controller
             'precio_venta'       => 'required|numeric|min:0',
             'tipo'               => 'required|in:preparado,directo',
             'costo'              => 'nullable|numeric|min:0',
-            'imagen_url'         => 'nullable|string',
+            'imagen_url'         => 'nullable|string|url|max:500',
             'imagen'             => 'nullable|image|mimes:jpeg,png,webp|max:2048',
             'disponible_desde'   => 'date_format:H:i',
             'disponible_hasta'   => 'date_format:H:i',

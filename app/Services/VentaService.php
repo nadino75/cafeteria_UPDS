@@ -77,7 +77,25 @@ class VentaService
                 ];
             }
 
+            // Validar que el descuento global no exceda el subtotal
+            if ($descuentoGlobal > $subtotal) {
+                $descuentoGlobal = $subtotal;
+            }
+
             $total = $subtotal - $descuentoGlobal + $impuesto;
+
+            if ($total < 0) {
+                $total = 0;
+            }
+
+            // Validar métodos de pago individuales
+            $sumaPagos = ($pagoEfectivo ?? 0) + ($pagoTarjeta ?? 0) + ($pagoTransferencia ?? 0) + ($pagoQr ?? 0);
+            if ($sumaPagos > 0 && $sumaPagos < $total) {
+                throw new \RuntimeException('La suma de los pagos debe cubrir el total de la venta.');
+            }
+
+            // Calcular vuelto (solo aplica para efectivo)
+            $vuelto = max(0, ($pagoEfectivo ?? 0) - $total);
 
             $venta = Venta::create([
                 'turno_id'          => $turnoId,
@@ -91,6 +109,7 @@ class VentaService
                 'pago_tarjeta'      => $pagoTarjeta,
                 'pago_transferencia'=> $pagoTransferencia,
                 'pago_qr'           => $pagoQr,
+                'vuelto'            => $vuelto,
                 'metodo_pago'       => $metodoPago,
                 'nota'              => $nota,
             ]);
@@ -191,7 +210,7 @@ class VentaService
         foreach ($menu->ingredientes as $ing) {
             $resultado[] = [
                 'producto_id' => $ing->producto_id,
-                'cantidad'    => (int) ceil($ing->cantidad * $item['cantidad']),
+                'cantidad'    => $ing->cantidad * $item['cantidad'],
             ];
         }
 

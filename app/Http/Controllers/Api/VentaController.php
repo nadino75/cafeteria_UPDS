@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class VentaController extends Controller
@@ -55,24 +56,37 @@ class VentaController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $items   = $request->items ?? [];
+        $tables  = ['producto' => 'productos', 'menu' => 'menus'];
+        $rules   = [
             'turno_id'               => 'required|exists:turnos,id',
             'metodo_pago'            => 'required|in:efectivo,tarjeta,transferencia,qr,mixto',
             'cliente_id'             => 'nullable|exists:clientes,id',
             'descuento'              => 'numeric|min:0',
             'impuesto'               => 'numeric|min:0',
-            'nota'                   => 'nullable|string',
+            'nota'                   => 'nullable|string|max:500',
             'items'                  => 'required|array|min:1',
             'items.*.tipo'           => 'required|in:producto,menu',
             'items.*.id'             => 'required|integer',
-            'items.*.cantidad'       => 'required|integer|min:1',
-            'items.*.precio_unitario'=> 'required|numeric|min:0',
+            'items.*.cantidad'       => 'required|integer|min:1|max:999',
+            'items.*.precio_unitario'=> 'required|numeric|min:0|max:999999.99',
             'items.*.descuento'      => 'numeric|min:0',
-            'pago_efectivo'         => 'nullable|numeric|min:0',
-            'pago_tarjeta'          => 'nullable|numeric|min:0',
-            'pago_transferencia'    => 'nullable|numeric|min:0',
-            'pago_qr'               => 'nullable|numeric|min:0',
-        ]);
+            'pago_efectivo'         => 'nullable|numeric|min:0|max:999999.99',
+            'pago_tarjeta'          => 'nullable|numeric|min:0|max:999999.99',
+            'pago_transferencia'    => 'nullable|numeric|min:0|max:999999.99',
+            'pago_qr'               => 'nullable|numeric|min:0|max:999999.99',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        $validator->after(function ($v) use ($items, $tables) {
+            foreach ($items as $i => $item) {
+                $table = $tables[$item['tipo']] ?? null;
+                if ($table && !\DB::table($table)->where('id', $item['id'])->exists()) {
+                    $v->errors()->add("items.{$i}.id", "El {$item['tipo']} con ID {$item['id']} no existe.");
+                }
+            }
+        });
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);

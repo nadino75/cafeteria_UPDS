@@ -24,6 +24,8 @@ class LoteInventario extends Model
     protected $casts = [
         'fecha_entrada'      => 'datetime',
         'fecha_vencimiento'  => 'date',
+        'cantidad_inicial'   => 'decimal:4',
+        'cantidad_disponible'=> 'decimal:4',
         'costo_unitario'     => 'decimal:2',
     ];
 

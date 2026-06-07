@@ -16,11 +16,12 @@ use Carbon\Carbon;
  */
 class StatsSeeder extends Seeder
 {
-    private array $productos = [];
-    private array $menus     = [];
-    private array $clientes  = [];
-    private array $users     = [];
-    private array $turnos    = [];
+    private array $productos  = [];
+    private array $menus      = [];
+    private array $clientes   = [];
+    private array $users      = [];
+    private array $turnos     = [];
+    private array $menuCostos = [];
 
     public function run(): void
     {
@@ -186,6 +187,7 @@ class StatsSeeder extends Seeder
         $this->productos = DB::table('productos')->pluck('id', 'codigo')->toArray();
         $this->menus     = DB::table('menus')->pluck('id', 'nombre')->toArray();
         $this->clientes  = DB::table('clientes')->pluck('id', 'nombre')->toArray();
+        $this->precomputarMenuCostos();
 
         $metodosPago = ['efectivo', 'efectivo', 'efectivo', 'tarjeta', 'tarjeta', 'transferencia'];
         $nombresMenus = ['Café americano', 'Café con leche', 'Chocolate caliente', 'Croissant de mantequilla', 'Combo mañana', 'Capuchino', 'Mocachino', 'Api con pastel', 'Salteña de carne'];
@@ -249,6 +251,21 @@ class StatsSeeder extends Seeder
         $this->command->line('  ✓ Turnos y ventas creados (90 días / ~3 meses de historia)');
     }
 
+    private function precomputarMenuCostos(): void
+    {
+        $ingredientes = DB::table('menu_ingredientes as mi')
+            ->join('productos as p', 'p.id', '=', 'mi.producto_id')
+            ->select('mi.menu_id', 'mi.cantidad', 'p.costo_unitario')
+            ->get();
+
+        foreach ($ingredientes as $ing) {
+            if (!isset($this->menuCostos[$ing->menu_id])) {
+                $this->menuCostos[$ing->menu_id] = 0;
+            }
+            $this->menuCostos[$ing->menu_id] += (float)$ing->cantidad * (float)$ing->costo_unitario;
+        }
+    }
+
     private function crearVenta(int $turnoId, int $usuarioId, Carbon $horaApertura, ?Carbon $horaCierre, array $metodosPago, array $nombresMenus, array $nombresClientes, bool $esHoy): void
     {
         // Aleatorizar hora de venta dentro del turno
@@ -288,7 +305,8 @@ class StatsSeeder extends Seeder
                     'subtotal'    => $precio * $cantidad,
                 ];
                 $total += $precio * $cantidad;
-                $costoTotal += ($precio * $cantidad) * 0.4; // Estimar 40% de margen
+                $costoMenu = $this->menuCostos[$menuId] ?? 0;
+                $costoTotal += $costoMenu * $cantidad;
             } else {
                 $prodKeys = array_keys($this->productos);
                 $codigo = $prodKeys[array_rand($prodKeys)];

@@ -30,8 +30,8 @@
 
         <div class="w-20 h-14 rounded overflow-hidden flex-shrink-0"
              style="background: var(--color-surface)">
-          <video v-if="item.tipo === 'video'" :src="item.archivo_url" muted class="w-full h-full object-cover" />
-          <img v-else :src="item.archivo_url" class="w-full h-full object-cover" />
+          <video v-if="item.tipo === 'video'" :src="storageBase + item.archivo_url" muted class="w-full h-full object-cover" />
+          <img v-else :src="storageBase + item.archivo_url" class="w-full h-full object-cover" />
         </div>
 
         <div class="flex-1 min-w-0">
@@ -134,6 +134,8 @@
 import { ref, onMounted } from 'vue'
 import client from '../../api/client'
 
+const storageBase = window.location.origin
+
 const contenidos = ref([])
 const cargando = ref(true)
 const modalAbierto = ref(false)
@@ -202,7 +204,8 @@ async function guardar() {
     cerrarModal()
     await cargar()
   } catch (e) {
-    console.error('Error al guardar:', e)
+    console.error('Error al guardar:', e.response?.data || e)
+    alert('Error: ' + JSON.stringify(e.response?.data?.errors || e.response?.data?.message || e.message))
   } finally {
     guardando.value = false
   }

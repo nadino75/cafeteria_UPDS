@@ -21,6 +21,7 @@ class Venta extends Model
         'pago_tarjeta',
         'pago_transferencia',
         'pago_qr',
+        'vuelto',
         'metodo_pago',
         'estado',
         'nota',
@@ -39,6 +40,7 @@ class Venta extends Model
         'pago_tarjeta'       => 'decimal:2',
         'pago_transferencia' => 'decimal:2',
         'pago_qr'            => 'decimal:2',
+        'vuelto'             => 'decimal:2',
     ];
 
     public function turno()

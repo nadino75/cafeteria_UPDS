@@ -24,7 +24,7 @@ class UsuarioController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre_completo' => 'required|string|max:100',
             'email'           => 'required|email|unique:usuarios',
-            'password'        => 'required|string|min:8',
+            'password'        => 'required|string|min:10',
             'rol_id'          => 'required|exists:roles,id',
         ]);
 
@@ -60,7 +60,7 @@ class UsuarioController extends Controller
             'email'           => 'email|unique:usuarios,email,' . $usuario->id,
             'rol_id'          => 'exists:roles,id',
             'activo'          => 'boolean',
-            'password'        => 'nullable|string|min:8',
+            'password'        => 'nullable|string|min:10',
         ]);
 
         if ($validator->fails()) {

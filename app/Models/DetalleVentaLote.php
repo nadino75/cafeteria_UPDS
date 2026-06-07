@@ -18,7 +18,8 @@ class DetalleVentaLote extends Model
     public $timestamps = false;
 
     protected $casts = [
-        'costo_unitario_lote' => 'decimal:2',
+        'cantidad_consumida'    => 'decimal:4',
+        'costo_unitario_lote'   => 'decimal:2',
     ];
 
     public function detalleVenta()

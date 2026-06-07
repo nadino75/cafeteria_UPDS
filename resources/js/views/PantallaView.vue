@@ -4,7 +4,7 @@
       <video
         v-if="contenidos[indiceActual]?.tipo === 'video'"
         :key="'v-' + indiceActual + '-' + Date.now()"
-        :src="contenidos[indiceActual].archivo_url"
+        :src="API_BASE + contenidos[indiceActual].archivo_url"
         autoplay
         muted
         playsinline
@@ -15,7 +15,7 @@
       <img
         v-else
         :key="'i-' + indiceActual + '-' + Date.now()"
-        :src="contenidos[indiceActual].archivo_url"
+        :src="API_BASE + contenidos[indiceActual].archivo_url"
         class="contenido"
         @load="iniciarTimer(contenidos[indiceActual].duracion_segundos)"
         @error="siguiente"
@@ -36,6 +36,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const API_POLLING = 60000
+const API_BASE = window.location.origin
 
 const contenidos = ref([])
 const indiceActual = ref(0)
@@ -54,7 +55,7 @@ function actualizarReloj() {
 
 async function fetchContenidos() {
   try {
-    const res = await fetch('/api/pantalla/contenido')
+    const res = await fetch(API_BASE + '/api/pantalla/contenido')
     if (res.ok) {
       const data = await res.json()
       if (data.length > 0) {

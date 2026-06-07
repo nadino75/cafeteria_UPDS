@@ -27,6 +27,7 @@ class Producto extends Model
     protected $casts = [
         'precio_venta'   => 'decimal:2',
         'costo_unitario' => 'decimal:2',
+        'stock_actual'   => 'decimal:4',
         'requiere_lote'  => 'boolean',
         'activo'         => 'boolean',
     ];

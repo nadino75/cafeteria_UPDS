@@ -21,6 +21,7 @@ class CorteCaja extends Model
         'efectivo_esperado',
         'total_tarjeta',
         'total_transferencia',
+        'total_qr',
         'total_real',
         'estado',
         'validado_por',
@@ -37,6 +38,7 @@ class CorteCaja extends Model
         'efectivo_esperado'     => 'decimal:2',
         'total_tarjeta'         => 'decimal:2',
         'total_transferencia'   => 'decimal:2',
+        'total_qr'              => 'decimal:2',
         'total_real'            => 'decimal:2',
         'fecha_validacion'      => 'datetime',
     ];

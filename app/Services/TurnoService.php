@@ -84,6 +84,7 @@ class TurnoService
                 'total_efectivo_contado'=> $datosCorte['total_efectivo_contado'],
                 'total_tarjeta'         => $datosCorte['total_tarjeta'] ?? 0,
                 'total_transferencia'   => $datosCorte['total_transferencia'] ?? 0,
+                'total_qr'              => $datosCorte['total_qr'] ?? 0,
                 'total_real'            => $totalReal,
                 'observaciones'         => $datosCorte['observaciones'] ?? null,
             ]);
@@ -128,13 +129,11 @@ class TurnoService
                 $totalImpuestos  += $venta->impuesto;
                 $numVentas++;
 
-                match ($venta->metodo_pago) {
-                    'efectivo'     => $totalVentasEfectivo += $venta->total,
-                    'tarjeta'      => $totalVentasTarjeta  += $venta->total,
-                    'transferencia'=> $totalVentasTransfer += $venta->total,
-                    'qr'           => $totalVentasQr       += $venta->total,
-                    default        => null,
-                };
+                // Usar columnas pago_* individuales para contar cada método
+                $totalVentasEfectivo      += (float) ($venta->pago_efectivo ?? 0);
+                $totalVentasTarjeta       += (float) ($venta->pago_tarjeta ?? 0);
+                $totalVentasTransfer      += (float) ($venta->pago_transferencia ?? 0);
+                $totalVentasQr            += (float) ($venta->pago_qr ?? 0);
             }
         }
 

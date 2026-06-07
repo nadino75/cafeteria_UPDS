@@ -20,7 +20,7 @@ class FifoService
      */
     public function descontarInventario(
         Producto $producto,
-        int $cantidad,
+        float $cantidad,
         int $usuarioId,
         string $referenciaTipo,
         int $referenciaId
@@ -95,7 +95,7 @@ class FifoService
      */
     public function registrarEntrada(
         Producto $producto,
-        int $cantidad,
+        float $cantidad,
         float $costoUnitario,
         int $usuarioId,
         ?int $compraId = null,
@@ -135,7 +135,7 @@ class FifoService
     /**
      * Verifica si hay stock suficiente para un producto.
      */
-    public function hayStockSuficiente(int $productoId, int $cantidad): bool
+    public function hayStockSuficiente(int $productoId, float $cantidad): bool
     {
         $disponible = LoteInventario::where('producto_id', $productoId)
             ->where('estado', 'disponible')

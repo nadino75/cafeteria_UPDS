@@ -82,5 +82,39 @@ class RolPermisosSeeder extends Seeder
                 ]);
             }
         }
+
+        // Proveedores: gerente (todo), almacenista (crear/leer/editar)
+        foreach (['crear', 'leer', 'editar', 'eliminar'] as $acc) {
+            DB::table('rol_permisos')->insertOrIgnore([
+                'rol_id'    => $roles['Gerente'],
+                'modulo_id' => $modulos['proveedores'],
+                'accion_id' => $acciones[$acc],
+            ]);
+        }
+        foreach (['crear', 'leer', 'editar'] as $acc) {
+            DB::table('rol_permisos')->insertOrIgnore([
+                'rol_id'    => $roles['Almacenista'],
+                'modulo_id' => $modulos['proveedores'],
+                'accion_id' => $acciones[$acc],
+            ]);
+        }
+
+        // Pantalla: todos pueden ver, solo gerente/admin editar
+        foreach (['leer'] as $acc) {
+            foreach (['Gerente', 'Cajero', 'Almacenista', 'Contador'] as $rol) {
+                DB::table('rol_permisos')->insertOrIgnore([
+                    'rol_id'    => $roles[$rol],
+                    'modulo_id' => $modulos['pantalla'],
+                    'accion_id' => $acciones[$acc],
+                ]);
+            }
+        }
+        foreach (['crear', 'editar', 'eliminar'] as $acc) {
+            DB::table('rol_permisos')->insertOrIgnore([
+                'rol_id'    => $roles['Gerente'],
+                'modulo_id' => $modulos['pantalla'],
+                'accion_id' => $acciones[$acc],
+            ]);
+        }
     }
 }

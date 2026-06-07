@@ -78,6 +78,7 @@ class TurnoController extends Controller
             'total_real'             => 'required|numeric|min:0',
             'total_tarjeta'          => 'numeric|min:0',
             'total_transferencia'    => 'numeric|min:0',
+            'total_qr'               => 'numeric|min:0',
             'billetes_200'           => 'integer|min:0',
             'billetes_100'           => 'integer|min:0',
             'billetes_50'            => 'integer|min:0',
@@ -92,7 +93,11 @@ class TurnoController extends Controller
         }
 
         try {
-            $corte = $this->turnoService->cerrarTurno($turno, $request->all(), $usuario->id);
+            $corte = $this->turnoService->cerrarTurno($turno, $request->only([
+                'total_efectivo_contado', 'total_real', 'total_tarjeta', 'total_transferencia',
+                'total_qr', 'billetes_200', 'billetes_100', 'billetes_50', 'billetes_20',
+                'billetes_10', 'monedas_total', 'observaciones',
+            ]), $usuario->id);
         } catch (\RuntimeException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 409);
         }

@@ -20,6 +20,8 @@ class ModulosSistemaSeeder extends Seeder
             ['clave' => 'turnos',       'nombre' => 'Turnos y Cierres de Caja'],
             ['clave' => 'clientes',     'nombre' => 'Clientes'],
             ['clave' => 'gastos',       'nombre' => 'Gastos Operativos'],
+            ['clave' => 'proveedores', 'nombre' => 'Proveedores'],
+            ['clave' => 'pantalla',    'nombre' => 'Pantalla / Display'],
         ];
 
         DB::table('modulos_sistema')->insertOrIgnore($modulos);
