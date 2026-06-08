@@ -193,12 +193,18 @@
       <div v-if="modalDetalle" class="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-4 pt-8 overflow-y-auto">
         <div class="bg-card border border-edge rounded-2xl w-full max-w-2xl p-6 my-4">
           <h3 class="font-display text-xl text-ink font-medium mb-1">Venta #{{ detalle?.id }}</h3>
-          <p class="text-ink-dim text-xs mb-4">{{ detalle?.fecha?.slice(0, 16).replace('T', ' ') }}</p>
+          <p class="text-ink-dim text-xs mb-4">
+            {{ detalle?.fecha?.slice(0, 16).replace('T', ' ') }}
+            <span v-if="detalle?.turno" class="ml-2">· Turno #{{ detalle.turno.id }}</span>
+          </p>
 
-          <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 text-sm">
             <div>
               <span class="text-ink-mute">Cliente:</span>
               <p class="text-ink font-medium">{{ detalle?.cliente?.nombre || '—' }}</p>
+              <p v-if="detalle?.cliente?.email" class="text-ink-dim text-xs mt-0.5">{{ detalle.cliente.email }}</p>
+              <p v-if="detalle?.cliente?.telefono" class="text-ink-dim text-xs">{{ detalle.cliente.telefono }}</p>
+              <p v-if="detalle?.cliente?.puntos_acumulados" class="text-ink-dim text-xs">{{ detalle.cliente.puntos_acumulados }} pts.</p>
             </div>
             <div>
               <span class="text-ink-mute">Cajero:</span>
@@ -206,9 +212,7 @@
             </div>
             <div>
               <span class="text-ink-mute">Método:</span>
-              <p class="text-ink">{{ detalle?.metodo_pago }}</p>
-            </div>
-            <div>
+              <p class="text-ink capitalize">{{ detalle?.metodo_pago || '—' }}</p>
               <span class="text-ink-mute">Estado:</span>
               <p>
                 <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
@@ -217,6 +221,29 @@
                   {{ detalle?.estado }}
                 </span>
               </p>
+            </div>
+          </div>
+
+          <div v-if="detalle?.pago_efectivo > 0 || detalle?.pago_tarjeta > 0 || detalle?.pago_transferencia > 0 || detalle?.pago_qr > 0 || detalle?.vuelto > 0" class="flex flex-wrap gap-x-6 gap-y-2 mb-4 p-3 bg-elevated/50 rounded-lg">
+            <div v-if="detalle?.pago_efectivo > 0">
+              <span class="text-ink-dim text-xs">Efectivo</span>
+              <p class="text-ink font-mono text-sm">Bs. {{ Number(detalle.pago_efectivo).toFixed(2) }}</p>
+            </div>
+            <div v-if="detalle?.pago_tarjeta > 0">
+              <span class="text-ink-dim text-xs">Tarjeta</span>
+              <p class="text-ink font-mono text-sm">Bs. {{ Number(detalle.pago_tarjeta).toFixed(2) }}</p>
+            </div>
+            <div v-if="detalle?.pago_transferencia > 0">
+              <span class="text-ink-dim text-xs">Transferencia</span>
+              <p class="text-ink font-mono text-sm">Bs. {{ Number(detalle.pago_transferencia).toFixed(2) }}</p>
+            </div>
+            <div v-if="detalle?.pago_qr > 0">
+              <span class="text-ink-dim text-xs">QR</span>
+              <p class="text-ink font-mono text-sm">Bs. {{ Number(detalle.pago_qr).toFixed(2) }}</p>
+            </div>
+            <div v-if="detalle?.vuelto > 0">
+              <span class="text-ink-dim text-xs">Vuelto</span>
+              <p class="text-err font-mono text-sm">- Bs. {{ Number(detalle.vuelto).toFixed(2) }}</p>
             </div>
           </div>
 
